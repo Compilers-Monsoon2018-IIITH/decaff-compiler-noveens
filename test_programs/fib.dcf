@@ -1,0 +1,15 @@
+int main(void) {
+	int n; ReadInteger(n);
+
+	if (n == 1) Print(0);
+	else {
+		int zer = 0, one = 1, now = 1, i;
+		for (i=0;i<n-2;i++) {
+			now = zer + one;
+			zer = one;
+			one = now;
+		}
+		Print(now);
+	}
+	return(0);
+}

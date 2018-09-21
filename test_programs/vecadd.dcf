@@ -1,0 +1,23 @@
+int main(void) {
+	int n, i; ReadInteger(n);
+	int[] v1, v2;
+	v1 = NewArray(n, int);
+	v2 = NewArray(n, int);
+
+	for (i=0;i<n;i++) {
+		int temp; ReadInteger(temp);
+		v1[i] = temp;
+	}
+
+	for (i=0;i<n;i++) {
+		int temp; ReadInteger(temp);
+		v2[i] = temp;
+	}
+
+	for (i=0;i<n;i++) {
+		Print(v1[i] + v2[i], " ");
+	}
+	Print('\n');
+
+	return(0);
+}
