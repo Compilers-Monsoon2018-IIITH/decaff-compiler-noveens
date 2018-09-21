@@ -1,15 +1,22 @@
-int main(void) {
-	int n; ReadInteger(n);
+class Program {
+	int main() {
+		int n; ReadInteger(n);
 
-	if (n == 1) Print(0);
-	else {
-		int zer = 0, one = 1, now = 1, i;
-		for (i=0;i<n-2;i++) {
-			now = zer + one;
-			zer = one;
-			one = now;
+		if (n == 1) {
+			Print(0, "\n");
 		}
-		Print(now);
+		else {
+			int zer, one, now, i;
+			zer = 0;
+			one = 1;
+			now = 1;
+			for i=0,i<n-2 {
+				now = zer + one;
+				zer = one;
+				one = now;
+			}
+			Print(now, "\n");
+		}
+		return 0;
 	}
-	return(0);
 }

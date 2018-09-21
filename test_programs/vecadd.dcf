@@ -1,23 +1,25 @@
-int main(void) {
-	int n, i; ReadInteger(n);
-	int[] v1, v2;
-	v1 = NewArray(n, int);
-	v2 = NewArray(n, int);
+class Program {
+	int [ 100000 ] v1;
+	int [ 100000 ] v2;
 
-	for (i=0;i<n;i++) {
-		int temp; ReadInteger(temp);
-		v1[i] = temp;
+	int main() {
+		int n, i; ReadInteger(n);
+		
+		for i=0,i<n {
+			int temp; ReadInteger(temp);
+			v1[i] = temp;
+		}
+
+		for i=0,i<n {
+			int temp; ReadInteger(temp);
+			v2[i] = temp;
+		}
+
+		for i=0,i<n {
+			Print(v1[i] + v2[i], " ");
+		}
+		Print("\n");
+
+		return 0;
 	}
-
-	for (i=0;i<n;i++) {
-		int temp; ReadInteger(temp);
-		v2[i] = temp;
-	}
-
-	for (i=0;i<n;i++) {
-		Print(v1[i] + v2[i], " ");
-	}
-	Print('\n');
-
-	return(0);
 }
