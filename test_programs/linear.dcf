@@ -1,7 +1,7 @@
 class Program {
-	int [ 100000 ] arr;
+	int arr[ 100000 ];
 
-	int main() {
+	void main() {
 		int n, i; ReadInteger(n);
 
 		for i=0,i<n {
@@ -26,6 +26,6 @@ class Program {
 			Print(to_search, " doesn't exist in the array", "\n");
 		}
 
-		return 0;
+		return;
 	}
 }

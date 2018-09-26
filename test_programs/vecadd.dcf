@@ -1,8 +1,8 @@
 class Program {
-	int [ 100000 ] v1;
-	int [ 100000 ] v2;
+	int v1[ 100000 ];
+	int v2[ 100000 ];
 
-	int main() {
+	void main() {
 		int n, i; ReadInteger(n);
 		
 		for i=0,i<n {
@@ -20,6 +20,6 @@ class Program {
 		}
 		Print("\n");
 
-		return 0;
+		return;
 	}
 }

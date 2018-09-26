@@ -1,5 +1,5 @@
 class Program {
-	int main() {
+	void main() {
 		int n; ReadInteger(n);
 
 		if (n == 1) {
@@ -17,6 +17,6 @@ class Program {
 			}
 			Print(now, "\n");
 		}
-		return 0;
+		return;
 	}
 }
