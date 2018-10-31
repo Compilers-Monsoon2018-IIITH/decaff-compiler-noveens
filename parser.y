@@ -58,65 +58,65 @@ int yyerror();
 
 %%
 
-program: CLASS PROG LEFT_CURLY field_decl method_decl RIGHT_CURLY
+program: CLASS PROG LEFT_CURLY field_decl method_decl RIGHT_CURLY		{ $$ = new Program($4, $5); }
 	;
 
-field_decl: 
-	| field_decl field_decls
+field_decl: 					{ $$ = new FieldDeclList(); }
+	| field_decl field_decls	{ $$->push_back($2); }
 	;
 
-method_decl: 
-	| method_decl method_decls
+method_decl: 					{ $$ = new MethodDeclList(); }
+	| method_decl method_decls	{ $$->push_back($2); }
 	;
 
-field_decls: type follow id SEMICOLON
-	| type follow id LEFT_SQUARE int_literal RIGHT_SQUARE SEMICOLON
+field_decls: type follow id SEMICOLON									{ $$->push_back($3); }
+	| type follow id LEFT_SQUARE int_literal RIGHT_SQUARE SEMICOLON		{ $$->push_back($3, $5); }
 	;
 
-follow:
-	| follow id COMMA
-	| follow id LEFT_SQUARE int_literal RIGHT_SQUARE COMMA
+follow:															{ $$ = new VariableList(); }
+	| follow id COMMA											{ $$->push_back($2); }
+	| follow id LEFT_SQUARE int_literal RIGHT_SQUARE COMMA		{ $$->push_back($2, $4); }
 	;
 
-method_decls: type id LEFT_ROUND RIGHT_ROUND block
-	| type id LEFT_ROUND param type id RIGHT_ROUND block
-	| VOID id LEFT_ROUND RIGHT_ROUND block
-	| VOID id LEFT_ROUND param type id RIGHT_ROUND block
+method_decls: type id LEFT_ROUND RIGHT_ROUND block			{ $$ = new MethodDecl(); $$->pb($1, $2) }
+	| type id LEFT_ROUND param type id RIGHT_ROUND block	{ $$ = new MethodDecl(); $4->add_arg($5, $6); $$->params = $4; }
+	| VOID id LEFT_ROUND RIGHT_ROUND block					{ $$ = new MethodDecl(); $$->pb($1, $2) }
+	| VOID id LEFT_ROUND param type id RIGHT_ROUND block	{ $$ = new MethodDecl(); $4->add_arg($5, $6); $$->params = $4; }
 	;
 
-param: 
-	| param type id COMMA
+param: 						{ $$ = new ParamList(); }
+	| param type id COMMA	{ $$->push_back($2, $4); }
 	;
 
-block: LEFT_CURLY multi_var_decl multi_statement RIGHT_CURLY
+block: LEFT_CURLY multi_var_decl multi_statement RIGHT_CURLY 	{ $$ = new Block($2, $3); }
 	;
 
-multi_var_decl: 
-	| multi_var_decl type multi_id id SEMICOLON
+multi_var_decl: 									{ $$ = new DeclerationList(); }
+	| multi_var_decl type multi_id id SEMICOLON		{ $3->push_back($4); $$->push_back($2, $3); }
 	;
 
-multi_id:
-	| multi_id id COMMA
+multi_id: 					{ $$ = new VariableList(); }
+	| multi_id id COMMA 	{ $$->push_back($2); }
 	;
 
-multi_statement:
-	| multi_statement statement
+multi_statement: 					{ $$ = new StatementList(); }
+	| multi_statement statement 	{ $1->push_back($2);  $$->push_back($1); }
 	;
 
 type: INT
 	| BOOL
 	;
 
-statement: location assign_op expr SEMICOLON
-	| method_call SEMICOLON
-	| IF LEFT_ROUND expr RIGHT_ROUND block ELSE block
-	| IF LEFT_ROUND expr RIGHT_ROUND block
-	| FOR id EQ expr COMMA expr block
-	| RET expr SEMICOLON
-	| RET SEMICOLON
-	| BREAK SEMICOLON
-	| CONT SEMICOLON
-	| block
+statement: location assign_op expr SEMICOLON 			{ $$ = new AssignStmt($1, $3); }
+	| method_call SEMICOLON 							{ $$ = new MethodCall }
+	| IF LEFT_ROUND expr RIGHT_ROUND block ELSE block 	{ $$ = new IfElseStmt($3, $5, $7); }
+	| IF LEFT_ROUND expr RIGHT_ROUND block 				{ $$ = new IfStmt($3, $5); }
+	| FOR id EQ expr COMMA expr block 					{ $$ = new ForStmt($2, $4, $6, $7); }
+	| RET expr SEMICOLON 								{ $$ = new RetExpr($2); }
+	| RET SEMICOLON 									{ $$ = new Ret(); }
+	| BREAK SEMICOLON 									{ $$ = bew BreakStmt(); }
+	| CONT SEMICOLON 									{ $$ = new ContStmt(); }
+	| block 											{ $$ = $1; }
 	;
 
 assign_op: EQ
