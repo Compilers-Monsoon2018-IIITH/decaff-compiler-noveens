@@ -1,60 +1,106 @@
 %{
+
 #include <stdio.h>
-int yylex();
-int yyerror();
+#include "class_definition.h"
+int fl = 0;
+extern "C" int yylex();
+extern "C" int yyparse();
+extern "C" FILE *yyin;
+extern "C" int line_num;
+extern union Node yylval;
+extern "C" int errors;
+void yyerror(const char *s);
+class Prog* start = NULL;
+int errors=0;
+
 %}
 
 %start program
 
-%token PROG
-%token CLASS
-%token LEFT_CURLY
-%token RIGHT_CURLY
-%token LEFT_SQUARE
-%token RIGHT_SQUARE
-%token LEFT_ROUND
-%token RIGHT_ROUND
-%token VOID
-%token INT
-%token BOOL
-%token IF
-%token ELSE
-%token FOR
-%token RET
-%token BREAK
-%token CONT
-%token NOT
-%token PLUS
-%token MINUS
-%token MUL
-%token DIV
-%token MOD
-%token EQ
-%token MINEQ
-%token PLUSEQ
-%token CALLOUT
-%token GT
-%token LT
-%token GE
-%token LE
-%token EQEQ
-%token NEQ
-%token ANDAND
-%token OROR
-%token HEX
-%token ALPHA
-%token DIGIT
-%token TRUE
-%token FALSE
-%token SQUOT
-%token DQUOT
-%token COMMA
-%token SEMICOLON
-%token CHAR
-%token UNDERSCORE
-%token REGEX_HEX
-%token REGEX_ID
-%token REGEX_DECIMAL
+%token <lit> PROG
+%token <lit> CLASS
+%token <lit> LEFT_CURLY
+%token <lit> RIGHT_CURLY
+%token <lit> LEFT_SQUARE
+%token <lit> RIGHT_SQUARE
+%token <lit> LEFT_ROUND
+%token <lit> RIGHT_ROUND
+%token <lit> VOID
+%token <lit> INT
+%token <lit> BOOL
+%token <lit> IF
+%token <lit> ELSE
+%token <lit> FOR
+%token <lit> RET
+%token <lit> BREAK
+%token <lit> CONT
+%token <lit> NOT
+%token <lit> PLUS
+%token <lit> MINUS
+%token <lit> MUL
+%token <lit> DIV
+%token <lit> MOD
+%token <lit> EQ
+%token <lit> MINEQ
+%token <lit> PLUSEQ
+%token <lit> CALLOUT
+%token <lit> GT
+%token <lit> LT
+%token <lit> GE
+%token <lit> LE
+%token <lit> EQEQ
+%token <lit> NEQ
+%token <lit> ANDAND
+%token <lit> OROR
+%token <lit> ALPHA
+%token <lit> DIGIT
+%token <lit> TRUE
+%token <lit> FALSE
+%token <lit> SQUOT
+%token <lit> DQUOT
+%token <lit> COMMA
+%token <lit> SEMICOLON
+%token <lit> CHAR
+%token <lit> UNDERSCORE
+%token <num> REGEX_HEX
+%token <lit> REGEX_ID
+%token <num> REGEX_DECIMAL
+%token <char_lit> REGEX_CHAR
+%token <lit> REGEX_STRING
+
+%type <Programs> program;
+%type <FieldDeclLists> field_decl;
+%type <VariableLists> field_decls;
+%type <VariableLists> follow
+%type <MethodDeclLists> method_decl;
+%type <MethodDecls> method_decls;
+%type <ParamLists> param;
+%type <Blocks> block;
+%type <FieldDeclLists> multi_var_decl;
+%type <VariableLists> multi_id;
+%type <StatementLists> multi_statement;
+%type <lit> type;
+%type <Statements> statement;
+%type <lit> assign_op;
+%type <MethodCalls> method_call;
+%type <CalloutCalls> callout_call;
+%type <MethodArgInpLists> multi_expr;
+%type <CalloutArgLists> multi_callout_arg;
+%type <TerminalVariables> method_name;
+%type <Locations> location;
+%type <Exprs> expr;
+%type <CalloutArgs> callout_arg;
+%type <lit> bin_op;
+%type <lit> arith_op;
+%type <lit> rel_op;
+%type <lit> eq_op;
+%type <lit> cond_op;
+%type <Literals> literal;
+%type <TerminalVariables> id;
+%type <num> int_literal;
+%type <lit> bool_literal;
+%type <char_lit> char_literal;
+%type <lit> string_literal;
 
 %%
 
@@ -100,7 +146,7 @@ multi_id: 																					{ $$ = new VariableList(); }
 	;
 
 multi_statement: 																			{ $$ = new StatementList(); }
-	| multi_statement statement 															{ $1->push_back($2);  $$->push_back($1); }
+	| multi_statement statement 															{ $$->push_back($2); }
 	;
 
 type: INT 																					{ $$ = string($1); }
@@ -108,14 +154,15 @@ type: INT 																					{ $$ = string($1); }
 	;
 
 statement: location assign_op expr SEMICOLON 												{ $$ = new AssignStmt($1, $2, $3); }
-	| method_call SEMICOLON 																{ $$ = $1 }
+	| method_call SEMICOLON 																{ $$ = $1; }
+	| callout_call SEMICOLON 																{ $$ = $1; }
 	| IF LEFT_ROUND expr RIGHT_ROUND block ELSE block 										{ $$ = new IfElseStmt($3, $5, $7); }
 	| IF LEFT_ROUND expr RIGHT_ROUND block 													{ $$ = new IfStmt($3, $5); }
 	| FOR id EQ expr COMMA expr block 														{ $$ = new ForStmt($2, $4, $6, $7); }
 	| RET expr SEMICOLON 																	{ $$ = new RetExpr($2); }
-	| RET SEMICOLON 																		{ $$ = $1; }
-	| BREAK SEMICOLON 																		{ $$ = $1; }
-	| CONT SEMICOLON 																		{ $$ = $1; }
+	| RET SEMICOLON 																		{ $$ = new StringRetBrkContStatement($1); }
+	| BREAK SEMICOLON 																		{ $$ = new StringRetBrkContStatement($1); }
+	| CONT SEMICOLON 																		{ $$ = new StringRetBrkContStatement($1); }
 	| block 																				{ $$ = $1; }
 	;
 
@@ -126,7 +173,9 @@ assign_op: EQ 																				{ $$ = string($1); }
 
 method_call: method_name LEFT_ROUND RIGHT_ROUND 											{ $$ = new MethodCall(); }
 	| method_name LEFT_ROUND multi_expr expr RIGHT_ROUND 									{ $3->push_back($4); $$ = new MethodCall($3); }
-	| CALLOUT LEFT_ROUND string_literal RIGHT_ROUND 										{ $$ = new CalloutCall($3); }
+	;
+
+callout_call: CALLOUT LEFT_ROUND string_literal RIGHT_ROUND 								{ $$ = new CalloutCall($3); }
 	| CALLOUT LEFT_ROUND string_literal COMMA multi_callout_arg callout_arg RIGHT_ROUND 	{ $5->push_back($6); $$ = new CalloutCall($3, $5); }
 	;
 
@@ -141,12 +190,13 @@ multi_callout_arg:  																		{ $$ = new CalloutArgList(); }
 method_name: id 																			{ $$ = $1; }
 	;
 
-location: id 																				{ $$ = $1 }
-	| id LEFT_SQUARE expr RIGHT_SQUARE 														{ $$ = new ArrayTerminalVariable($1, $3); }
+location: id 																				{ $$ = new Location($1); }
+	| id LEFT_SQUARE expr RIGHT_SQUARE 														{ $$ = new Location($1, $3); }
 	;
 
 expr: location 																				{ $$ = $1; }
 	| method_call 																			{ $$ = $1; }
+	| callout_call 																			{ $$ = $1; }
 	| literal 																				{ $$ = new ExprIntCharBool($1); }
 	| expr bin_op expr /*FIXXXXXXXXXXXXX*/ 													{ $$ = new BinaryOpExpression($1, $2, $3); }
 	| MINUS expr 																			{ $$ = new UnaryOpExpression($1, $2); }
@@ -154,63 +204,57 @@ expr: location 																				{ $$ = $1; }
 	| LEFT_ROUND expr RIGHT_ROUND 															{ $$ = $2; }
 	;
 
-callout_arg: expr 																			{ $$ = $1; }
-	| string_literal 																		{ $$ = $1; }
+callout_arg: expr 																			{ $$ = new CalloutArg($1); }
+	| string_literal 																		{ $$ = new CalloutArg($1); }
 	;
 
-bin_op: arith_op 																			{ $$ = $1; }
-	| rel_op																				{ $$ = $1; }
-	| eq_op 																				{ $$ = $1; }
-	| cond_op 																				{ $$ = $1; }
+bin_op: arith_op 																			{ $$ = string($1); }
+	| rel_op																				{ $$ = string($1); }
+	| eq_op 																				{ $$ = string($1); }
+	| cond_op 																				{ $$ = string($1); }
 	;
 
-arith_op: PLUS 																				{ $$ = $1; }
-	| MINUS 																				{ $$ = $1; }
-	| MUL 																					{ $$ = $1; }
-	| DIV 																					{ $$ = $1; }
-	| MOD 																					{ $$ = $1; }
+arith_op: PLUS 																				{ $$ = string($1); }
+	| MINUS 																				{ $$ = string($1); }
+	| MUL 																					{ $$ = string($1); }
+	| DIV 																					{ $$ = string($1); }
+	| MOD 																					{ $$ = string($1); }
 	;
 
-rel_op: GT  																				{ $$ = $1; }
-	| LT  																					{ $$ = $1; }
-	| GE 																					{ $$ = $1; }
-	| LE 																					{ $$ = $1; }
+rel_op: GT  																				{ $$ = string($1); }
+	| LT  																					{ $$ = string($1); }
+	| GE 																					{ $$ = string($1); }
+	| LE 																					{ $$ = string($1); }
 	;
 
-eq_op: EQEQ  																				{ $$ = $1; }
-	| NEQ 																					{ $$ = $1; }
+eq_op: EQEQ  																				{ $$ = string($1); }
+	| NEQ 																					{ $$ = string($1); }
 	;
 
-cond_op: ANDAND 																			{ $$ = $1; }
-	| OROR 																					{ $$ = $1; }
+cond_op: ANDAND 																			{ $$ = string($1); }
+	| OROR 																					{ $$ = string($1); }
 	;
 
-literal: int_literal 																		{ $$ = int($1); }
-	| char_literal 																			{ $$ = char($1); }
-	| bool_literal 																			{ $$ = bool($1); }
+literal: int_literal 																		{ $$ = new Literal(int($1)); }
+	| char_literal 																			{ $$ = new Literal(char($1)); }
+	| bool_literal 																			{ $$ = new Literal(string($1)); }
 	;
 
 id: REGEX_ID 																				{ $$ = new TerminalVariable(string($1)); }
 	;
 
-int_literal: decimal_literal 																{ $$ = $1; }
-	| hex_literal 																			{ $$ = $1; }
+int_literal: REGEX_DECIMAL 																	{ $$ = int($1); }
+	| REGEX_HEX 																			{ $$ = int($1); }
 	;
 
-decimal_literal: REGEX_DECIMAL 																{ $$ = $1; }
+bool_literal: TRUE 																			{ $$ = string($1); }
+	| FALSE 																				{ $$ = string($1); }
 	;
 
-hex_literal: REGEX_HEX 																		{ $$ = $1; }
+char_literal: /*SQUOT CHAR SQUOT*/ REGEX_CHAR 												{ $$ = char($1); }
 	;
 
-bool_literal: TRUE 																			{ $$ = $1; }
-	| FALSE 																				{ $$ = $1; }
-	;
-
-char_literal: /*SQUOT CHAR SQUOT*/ REGEX_CHAR 												{ $$ = $1; }
-	;
-
-string_literal: /*DQUOT multichar DQUOT*/ REGEX_STRING 										{ $$ = $1; }
+string_literal: /*DQUOT multichar DQUOT*/ REGEX_STRING 										{ $$ = string($1); }
 	;
 
 %%

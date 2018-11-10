@@ -31,12 +31,21 @@ CalloutCall::CalloutCall(string _function_name)
 
 // Class-6
 CalloutArgList::CalloutArgList() {};
-void CalloutArgList::push_back(class Expr* arg) {
-	arg_list_expr.push_back(arg);
+void CalloutArgList::push_back(class CalloutArg* arg) {
+	arg_list.push_back(arg);
 }
-void CalloutArgList::push_back(string arg) {
-	arg_list_string.push_back(arg);
-}
+
+//
+CalloutArg::CalloutArg(class Expr* arg)
+: arg_expr(arg) { arg_type = "expr"; };
+CalloutArg::CalloutArg(string arg)
+: arg_string(arg) { arg_type = "string"; };
+
+//
+Location::Location(class TerminalVariable* _var_name)
+: var_name(_var_name) { location_type = "variable"; };
+Location::Location(class TerminalVariable* _var_name, class Expr* _index)
+: var_name(_var_name), index(_index) { location_type = "array"; };
 
 // Class-7
 ExprIntCharBool::ExprIntCharBool(int var)
@@ -52,7 +61,9 @@ TerminalVariable::TerminalVariable(string _variable_name)
 
 // Class-9
 ArrayTerminalVariable::ArrayTerminalVariable(class TerminalVariable* _arr_name, class Expr* _index)
-: arr_name(_arr_name), index(_index) {};
+: arr_name(_arr_name), index(_index) { index_type = "expr"; };
+ArrayTerminalVariable::ArrayTerminalVariable(class TerminalVariable* _arr_name, int _index)
+: arr_name(_arr_name), index_int(_index) { index_type = "int"; };
 
 // Class-10
 FieldDeclList::FieldDeclList() {};
@@ -91,7 +102,7 @@ void ParamList::push_back(string type, class TerminalVariable* var) {
 }
 
 // Class-15
-Block::Block(class DeclerationList* _decleration_list, class StatementList* _statement_list) 
+Block::Block(class FieldDeclList* _decleration_list, class StatementList* _statement_list) 
 : decleration_list(_decleration_list), statement_list(_statement_list) {};
 
 // Class-16
@@ -101,10 +112,8 @@ void StatementList::push_back(class Statement* stat) {
 }
 
 // Class-17
-AssignStmt::AssignStmt(class TerminalVariable* _left, string _op, class Expr* _right) 
-: left(_left), op(_op), right(_right) { left_type = "variable"; };
-AssignStmt::AssignStmt(class ArrayTerminalVariable* _left, string _op, class Expr* _right) 
-: left_arr(_left), op(_op), right(_right) { left_type = "array"; };
+AssignStmt::AssignStmt(class Location* _left, string _op, class Expr* _right) 
+: left(_left), op(_op), right(_right) {};
 
 // Class-18
 IfElseStmt::IfElseStmt(class Expr* _cond, class Block* _if_block, class Block* _else_block)
@@ -123,3 +132,19 @@ ForStmt::ForStmt(class ArrayTerminalVariable* _loop_var, class Expr* _start_cond
 // Class-21
 RetExpr::RetExpr(class Expr* _expr)
 : expr(_expr) {};
+
+// Class-22
+StringRetBrkContStatement::StringRetBrkContStatement(string _type)
+: type(_type) {};
+
+// Class-23
+Program::Program(class FieldDeclList* _field_decl, class MethodDeclList* _method_decl)
+: field_decl(_field_decl), method_decl(_method_decl) {};
+
+//
+Literal::Literal(int _lit_int)
+: lit_int(_lit_int) {};
+Literal::Literal(char _lit_char)
+: lit_char(_lit_char) {};
+Literal::Literal(string _lit_string)
+: lit_string(_lit_string) {};

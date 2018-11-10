@@ -80,29 +80,25 @@ extern int yydebug;
     NEQ = 290,
     ANDAND = 291,
     OROR = 292,
-    HEX = 293,
-    ALPHA = 294,
-    DIGIT = 295,
-    TRUE = 296,
-    FALSE = 297,
-    SQUOT = 298,
-    DQUOT = 299,
-    COMMA = 300,
-    SEMICOLON = 301,
-    CHAR = 302,
-    UNDERSCORE = 303,
-    REGEX_HEX = 304,
-    REGEX_ID = 305,
-    REGEX_DECIMAL = 306
+    ALPHA = 293,
+    DIGIT = 294,
+    TRUE = 295,
+    FALSE = 296,
+    SQUOT = 297,
+    DQUOT = 298,
+    COMMA = 299,
+    SEMICOLON = 300,
+    CHAR = 301,
+    UNDERSCORE = 302,
+    REGEX_HEX = 303,
+    REGEX_ID = 304,
+    REGEX_DECIMAL = 305,
+    REGEX_CHAR = 306,
+    REGEX_STRING = 307
   };
 #endif
 
 /* Value type.  */
-#if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
-typedef int YYSTYPE;
-# define YYSTYPE_IS_TRIVIAL 1
-# define YYSTYPE_IS_DECLARED 1
-#endif
 
 
 extern YYSTYPE yylval;

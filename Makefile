@@ -25,7 +25,7 @@ CFLAGS = -lfl `llvm-config-3.8 --cxxflags --cppflags mcjit native --ldflags --li
 FLAGS=-w -Wno-deprecated -g -std=c++14
 all: $(TARGET)
 $(TARGET): lex.yy.c parser.tab.c class.cpp class_definition.h
-	$(CC) $(FLAGS) lex.yy.c parser.tab.c Classes.cpp $(CFLAGS)
+	$(CC) $(FLAGS) lex.yy.c parser.tab.c class.cpp $(CFLAGS)
 lex.yy.c: scanner.l
 	flex scanner.l
 parser.tab.c: parser.y

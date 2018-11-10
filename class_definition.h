@@ -4,6 +4,77 @@
 
 using namespace std;
 
+union Node{
+	int num;
+	string lit;
+	char char_lit;
+	class Program* Programs;
+	class Expr* Exprs;
+	class BinaryOpExpression* BinaryOpExpressions;
+	class UnaryOpExpression* UnaryOpExpressions;
+	class MethodCall* MethodCalls;
+	class MethodArgInpList* MethodArgInpLists;
+	class CalloutCall* CalloutCalls;
+	class CalloutArgList* CalloutArgLists;
+	class ExprIntCharBool* ExprIntCharBools;
+	class TerminalVariable* TerminalVariables;
+	class ArrayTerminalVariable* ArrayTerminalVariables;
+	class FieldDeclList* FieldDeclLists;
+	class VariableList* VariableLists;
+	class MethodDeclList* MethodDeclLists;
+	class MethodDecl* MethodDecls;
+	class ParamList* ParamLists;
+	class Block* Blocks;
+	class Statement* Statements;
+	class StatementList* StatementLists;
+	class AssignStmt* AssignStmts;
+	class IfElseStmt* IfElseStmts;
+	class IfStmt* IfStmts;
+	class ForStmt* ForStmts;
+	class RetExpr* RetExprs;
+	class StringRetBrkContStatement* StringRetBrkContStatements;
+	class Location* Locations;
+	class CalloutArg* CalloutArgs;
+	class Literal* Literals;
+	Node() {
+		num = 0;
+		lit = "";
+		char_lit = 'a';
+		Program* Programs = NULL;
+		Expr* Exprs = NULL;
+		BinaryOpExpression* BinaryOpExpressions = NULL;
+		UnaryOpExpression* UnaryOpExpressions = NULL;
+		MethodCall* MethodCalls = NULL;
+		MethodArgInpList* MethodArgInpLists = NULL;
+		CalloutCall* CalloutCalls = NULL;
+		CalloutArgList* CalloutArgLists = NULL;
+		ExprIntCharBool* ExprIntCharBools = NULL;
+		TerminalVariable* TerminalVariables = NULL;
+		ArrayTerminalVariable* ArrayTerminalVariables = NULL;
+		FieldDeclList* FieldDeclLists = NULL;
+		VariableList* VariableLists = NULL;
+		MethodDeclList* MethodDeclLists = NULL;
+		MethodDecl* MethodDecls = NULL;
+		ParamList* ParamLists = NULL;
+		Block* Blocks = NULL;
+		Statement* Statements = NULL;
+		StatementList* StatementLists = NULL;
+		AssignStmt* AssignStmts = NULL;
+		IfElseStmt* IfElseStmts = NULL;
+		IfStmt* IfStmts = NULL;
+		ForStmt* ForStmts = NULL;
+		RetExpr* RetExprs = NULL;
+		StringRetBrkContStatement* StringRetBrkContStatements = NULL;
+		Location* Locations = NULL;
+		CalloutArg* CalloutArgs = NULL;
+		Literal* Literals = NULL;
+	}
+	~Node(){}
+};
+typedef union Node YYSTYPE;
+
+#define YYSTYPE_IS_DECLARED 1
+
 class BaseAst;
 
 class ASTVisitor{
@@ -20,10 +91,24 @@ class BaseAst {
 		virtual ~BaseAst() = 0;
 };
 
+class Program: public BaseAst {
+	public:
+		class FieldDeclList* field_decl;
+		class MethodDeclList* method_decl;
+
+		Program(class FieldDeclList*, class MethodDeclList*) ;
+};
+
 /* Final Variables */
 class Expr: public BaseAst {
 	public:
 		virtual ~Expr() = 0; // Abstract class, can't be instantiated
+};
+
+// Base class
+class Statement: public BaseAst {
+	public:
+		virtual ~Statement() = 0; // Abstract class, can't be instantiated
 };
 
 class BinaryOpExpression: public Expr {
@@ -43,7 +128,7 @@ class UnaryOpExpression: public Expr {
 		UnaryOpExpression(string, class Expr*) ;
 };
 
-class MethodCall: public Expr {
+class MethodCall: public Expr, public Statement {
 	public:
 		class MethodArgInpList* args;
 		
@@ -60,7 +145,7 @@ class MethodArgInpList: public BaseAst {
 		void push_back(class Expr*);
 };
 
-class CalloutCall: public Expr {
+class CalloutCall: public Expr, public Statement {
 	public:
 		string function_name;
 		class CalloutArgList* args;
@@ -71,13 +156,21 @@ class CalloutCall: public Expr {
 
 class CalloutArgList: public BaseAst {
 	public:
-		vector<class Expr*> arg_list_expr;
-		vector<string> arg_list_string;
+		vector<class CalloutArg*> arg_list;
 
 		CalloutArgList() ;
 
-		void push_back(class Expr*);
-		void push_back(string);
+		void push_back(class CalloutArg*);
+};
+
+class Location: public Expr {
+	public:
+		class TerminalVariable* var_name;
+		class Expr* index;
+		string location_type;
+
+		Location(class TerminalVariable*) ;
+		Location(class TerminalVariable*, class Expr*) ;
 };
 
 class ExprIntCharBool: public Expr {
@@ -92,6 +185,16 @@ class ExprIntCharBool: public Expr {
 		ExprIntCharBool(bool) ;
 };
 
+class CalloutArg: public BaseAst {
+	public:
+		class Expr* arg_expr;
+		string arg_string;
+		string arg_type = "";
+
+		CalloutArg(class Expr*) ;
+		CalloutArg(string) ;
+};
+
 class TerminalVariable: public Expr {
 	public:
 		string variable_name;
@@ -103,8 +206,11 @@ class ArrayTerminalVariable: public Expr {
 	public:
 		class TerminalVariable* arr_name;
 		class Expr* index;
+		int index_int;
+		string index_type;
 
 		ArrayTerminalVariable(class TerminalVariable*, class Expr*) ;
+		ArrayTerminalVariable(class TerminalVariable*, int) ;
 };
 
 /* Field decleration
@@ -166,14 +272,6 @@ class ParamList: public BaseAst {
 		void push_back(string, class TerminalVariable*);
 };
 
-class Block: public BaseAst {
-	public:
-		class DeclerationList* decleration_list;
-		class StatementList* statement_list;
-
-		Block(class DeclerationList*, class StatementList*) ;
-};
-
 /* Statements */
 
 // List class
@@ -186,22 +284,22 @@ class StatementList: public BaseAst {
 		void push_back(class Statement*);
 };
 
-// Base class
-class Statement: public BaseAst {
+class Block: public Statement {
 	public:
-		virtual ~Statement() = 0; // Abstract class, can't be instantiated
+		class FieldDeclList* decleration_list;
+		class StatementList* statement_list;
+
+		Block(class FieldDeclList*, class StatementList*) ;
 };
 
 // Specific Statement class
 class AssignStmt: public Statement {
 	public:
-		class TerminalVariable* left;
-		class ArrayTerminalVariable* left_arr;
-		string op, left_type;
+		class Location* left;
+		string op;
 		class Expr* right;
 
-		AssignStmt(class TerminalVariable*, string, class Expr*) ;
-		AssignStmt(class ArrayTerminalVariable*, string, class Expr*) ;
+		AssignStmt(class Location*, string, class Expr*) ;
 };
 
 // Specific Statement class
@@ -242,6 +340,24 @@ class RetExpr: public Statement {
 		class Expr* expr;
 
 		RetExpr(class Expr*) ;
+};
+
+class StringRetBrkContStatement: public Statement {
+	public:
+		string type;
+
+		StringRetBrkContStatement(string) ;
+};
+
+class Literal: public BaseAst {
+	public:
+		int lit_int;
+		char lit_char;
+		string lit_string, literal_type;
+
+		Literal(int) ;
+		Literal(char) ;
+		Literal(string) ;
 };
 
 #endif // __CLASS_DEF__
