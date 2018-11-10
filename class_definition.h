@@ -1,61 +1,110 @@
+#ifndef __CLASS_DEF__
+#define __CLASS_DEF__
 #include <bits/stdc++.h>
-#include <llvm/IR/Module.h>
-#include <llvm/IR/Function.h>
-#include <llvm/IR/Type.h>
-#include <llvm/IR/DerivedTypes.h>
-#include <llvm/IR/LLVMContext.h>
-#include <llvm/Target/TargetMachine.h>
-#include <llvm/IR/PassManager.h>
-#include <llvm/IR/Instructions.h>
-#include <llvm/IR/CallingConv.h>
-#include <llvm/Bitcode/ReaderWriter.h>
-#include <llvm/IR/Verifier.h>
-#include <llvm/IR/IRBuilder.h>
-#include <llvm/Support/TargetSelect.h>
-#include <llvm/ExecutionEngine/GenericValue.h>
-#include <llvm/ExecutionEngine/MCJIT.h>
-#include <llvm/Support/raw_ostream.h>
 
 using namespace std;
-using namespace llvm;
+
+class BaseAst;
+
+class ASTVisitor{
+	public:
+		virtual void visit(class BaseAst&) = 0;
+};
 
 /* Base AST Node class, inherited by every other class */
 class BaseAst {
 	public:
-		virtual int accept(Visitor* v) {};
-		virtual Value* codegen() {}
+		virtual void accept(class ASTVisitor& v) {
+			v.visit(*this);
+		}
+		virtual ~BaseAst() = 0;
 };
 
 /* Final Variables */
 class Expr: public BaseAst {
 	public:
-		Expr() {}
-}
+		virtual ~Expr() = 0; // Abstract class, can't be instantiated
+};
 
-///////////////////////////////////////////////// DONT FORGET TO INHERIT TO EXPR:
-/*
+class BinaryOpExpression: public Expr {
+	public:
+		string op;
+		class Expr* left;
+		class Expr* right;
 
-		ArrayTerminalVariable(class TerminalVariable*, class BinaryOpExpression*) {}
-		ArrayTerminalVariable(class TerminalVariable*, class UnaryOpExpression*) {}
-		ArrayTerminalVariable(class TerminalVariable*, class ArrayTerminalVariable*) {}
-		ArrayTerminalVariable(class TerminalVariable*, class TerminalVariable*) {}
-		ArrayTerminalVariable(class TerminalVariable*, class MethodCall*) {}
-		ArrayTerminalVariable(class TerminalVariable*, class CalloutCall*) {}
-		ArrayTerminalVariable(class TerminalVariable*, int) {}
-		ArrayTerminalVariable(class TerminalVariable*, char) {}
-		ArrayTerminalVariable(class TerminalVariable*, bool) {}
- */
+		BinaryOpExpression(class Expr*, string, class Expr*) {}
+};
+
+class UnaryOpExpression: public Expr {
+	public:
+		string op;
+		class Expr* expr;
+
+		UnaryOpExpression(string, class Expr*) {}
+};
+
+class MethodCall: public Expr {
+	public:
+		class MethodArgInpList* args;
+		
+		MethodCall() {}
+		MethodCall(class MethodArgInpList*) {}
+};
+
+class MethodArgInpList: public BaseAst {
+	public:
+		vector<class Expr*> arg_list;
+
+		MethodArgInpList() {}
+
+		void push_back(class Expr*);
+};
+
+class CalloutCall: public Expr {
+	public:
+		class CalloutArgList* args;
+		string function_name;
+		
+		CalloutCall(string) {}
+		CalloutCall(string, class CalloutArgList*) {}
+};
+
+class CalloutArgList: public BaseAst {
+	public:
+		vector<class Expr*> arg_list_expr;
+		vector<string> arg_list_string;
+
+		CalloutArgList() {}
+
+		void push_back(class Expr*);
+		void push_back(string);
+};
+
+class ExprIntCharBool: public Expr {
+	public:
+		int this_int;
+		char this_char;
+		bool this_bool;
+		string what_type;
+
+		ExprIntCharBool(int) {}
+		ExprIntCharBool(char) {}
+		ExprIntCharBool(bool) {}
+};
 
 class TerminalVariable: public Expr {
 	public:
-		string veriable_name;
+		string variable_name;
 		
 		TerminalVariable(string) {}
 };
 
 class ArrayTerminalVariable: public Expr {
 	public:
-		ArrayTerminalVariable(class TerminalVariable*, class Expr*)
+		class TerminalVariable* arr_name;
+		class Expr* index;
+
+		ArrayTerminalVariable(class TerminalVariable*, class Expr*) {}
 };
 
 /* Field decleration
@@ -140,14 +189,17 @@ class StatementList: public BaseAst {
 // Base class
 class Statement: public BaseAst {
 	public:
-		int nothing;
-
-		Statement() {}
+		virtual ~Statement() = 0; // Abstract class, can't be instantiated
 };
 
 // Specific Statement class
 class AssignStmt: public Statement {
 	public:
+		class TerminalVariable* left;
+		class ArrayTerminalVariable* left_arr;
+		class Expr* right;
+		string op, left_type;
+
 		AssignStmt(class TerminalVariable*, string, class Expr*) {}
 		AssignStmt(class ArrayTerminalVariable*, string, class Expr*) {}
 };
@@ -155,18 +207,31 @@ class AssignStmt: public Statement {
 // Specific Statement class
 class IfElseStmt: public Statement {
 	public:
+		class Expr* cond;
+		class Block* if_block;
+		class Block* else_block;
+
 		IfElseStmt(class Expr*, class Block*, class Block*) {}
 };
 
 // Specific Statement class
 class IfStmt: public Statement {
 	public:
+		class Expr* cond;
+		class Block* if_block;
+
 		IfStmt(class Expr*, class Block*) {}
 };
 
 // Specific Statement class
 class ForStmt: public Statement {
 	public:
+		class TerminalVariable* loop_var;
+		class ArrayTerminalVariable* loop_var_arr;
+		class Expr* start_cond;
+		class Expr* right_cond; 
+		class Block* code_block;		
+
 		ForStmt(class TerminalVariable*, class Expr*, class Expr*, class Block*) {}
 		ForStmt(class ArrayTerminalVariable*, class Expr*, class Expr*, class Block*) {}
 };
@@ -174,13 +239,9 @@ class ForStmt: public Statement {
 // Specific Statement class
 class RetExpr: public Statement {
 	public:
+		class Expr* expr;
+
 		RetExpr(class Expr*) {}
 };
 
-/* Method call */
-
-class MethodCall: public BaseAst {
-	public:
-		MethodCall() {}
-		MethodCall() {class }
-};
+#endif // __CLASS_DEF__

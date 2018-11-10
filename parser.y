@@ -147,7 +147,7 @@ location: id 																				{ $$ = $1 }
 
 expr: location 																				{ $$ = $1; }
 	| method_call 																			{ $$ = $1; }
-	| literal 																				{ $$ = $1; }
+	| literal 																				{ $$ = new ExprIntCharBool($1); }
 	| expr bin_op expr /*FIXXXXXXXXXXXXX*/ 													{ $$ = new BinaryOpExpression($1, $2, $3); }
 	| MINUS expr 																			{ $$ = new UnaryOpExpression($1, $2); }
 	| NOT expr 																				{ $$ = new UnaryOpExpression($1, $2); }
