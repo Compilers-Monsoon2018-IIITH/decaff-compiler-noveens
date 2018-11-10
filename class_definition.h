@@ -32,7 +32,7 @@ class BinaryOpExpression: public Expr {
 		class Expr* left;
 		class Expr* right;
 
-		BinaryOpExpression(class Expr*, string, class Expr*) {}
+		BinaryOpExpression(class Expr*, string, class Expr*) ;
 };
 
 class UnaryOpExpression: public Expr {
@@ -40,33 +40,33 @@ class UnaryOpExpression: public Expr {
 		string op;
 		class Expr* expr;
 
-		UnaryOpExpression(string, class Expr*) {}
+		UnaryOpExpression(string, class Expr*) ;
 };
 
 class MethodCall: public Expr {
 	public:
 		class MethodArgInpList* args;
 		
-		MethodCall() {}
-		MethodCall(class MethodArgInpList*) {}
+		MethodCall() ;
+		MethodCall(class MethodArgInpList*) ;
 };
 
 class MethodArgInpList: public BaseAst {
 	public:
 		vector<class Expr*> arg_list;
 
-		MethodArgInpList() {}
+		MethodArgInpList() ;
 
 		void push_back(class Expr*);
 };
 
 class CalloutCall: public Expr {
 	public:
-		class CalloutArgList* args;
 		string function_name;
+		class CalloutArgList* args;
 		
-		CalloutCall(string) {}
-		CalloutCall(string, class CalloutArgList*) {}
+		CalloutCall(string) ;
+		CalloutCall(string, class CalloutArgList*) ;
 };
 
 class CalloutArgList: public BaseAst {
@@ -74,7 +74,7 @@ class CalloutArgList: public BaseAst {
 		vector<class Expr*> arg_list_expr;
 		vector<string> arg_list_string;
 
-		CalloutArgList() {}
+		CalloutArgList() ;
 
 		void push_back(class Expr*);
 		void push_back(string);
@@ -87,16 +87,16 @@ class ExprIntCharBool: public Expr {
 		bool this_bool;
 		string what_type;
 
-		ExprIntCharBool(int) {}
-		ExprIntCharBool(char) {}
-		ExprIntCharBool(bool) {}
+		ExprIntCharBool(int) ;
+		ExprIntCharBool(char) ;
+		ExprIntCharBool(bool) ;
 };
 
 class TerminalVariable: public Expr {
 	public:
 		string variable_name;
 		
-		TerminalVariable(string) {}
+		TerminalVariable(string) ;
 };
 
 class ArrayTerminalVariable: public Expr {
@@ -104,7 +104,7 @@ class ArrayTerminalVariable: public Expr {
 		class TerminalVariable* arr_name;
 		class Expr* index;
 
-		ArrayTerminalVariable(class TerminalVariable*, class Expr*) {}
+		ArrayTerminalVariable(class TerminalVariable*, class Expr*) ;
 };
 
 /* Field decleration
@@ -115,7 +115,7 @@ class FieldDeclList: public BaseAst {
 	public:	
 		vector<class VariableList*> all_declerations;
 		
-		FieldDeclList() {}
+		FieldDeclList() ;
 		
 		void push_back(class VariableList*);
 };
@@ -126,7 +126,7 @@ class VariableList: public BaseAst {
 		vector<class ArrayTerminalVariable*> declarations_array;
 		string decleration_type;
 		
-		VariableList() {}
+		VariableList() ;
 		
 		void push_back(class TerminalVariable*);
 		void push_back(class ArrayTerminalVariable*);
@@ -137,7 +137,7 @@ class MethodDeclList: public BaseAst {
 	public:	
 		vector<class MethodDecl*> method_declerations_list;
 		
-		MethodDeclList() {}
+		MethodDeclList() ;
 		
 		void push_back(class MethodDecl*);
 };
@@ -153,15 +153,15 @@ class MethodDecl: public BaseAst {
 		class ParamList* param_list;
 		class Block* code_block;
 
-		MethodDecl(string, class TerminalVariable*, class ParamList*, class Block*) {}
-		MethodDecl(string, class TerminalVariable*, class Block*) {}
+		MethodDecl(string, class TerminalVariable*, class ParamList*, class Block*) ;
+		MethodDecl(string, class TerminalVariable*, class Block*) ;
 };
 
 class ParamList: public BaseAst {
 	public:	
 		vector<pair<string, class TerminalVariable*>> parameters_list;
 
-		ParamList() {}
+		ParamList() ;
 
 		void push_back(string, class TerminalVariable*);
 };
@@ -171,7 +171,7 @@ class Block: public BaseAst {
 		class DeclerationList* decleration_list;
 		class StatementList* statement_list;
 
-		Block(class DeclerationList*, class StatementList*) {}
+		Block(class DeclerationList*, class StatementList*) ;
 };
 
 /* Statements */
@@ -179,9 +179,9 @@ class Block: public BaseAst {
 // List class
 class StatementList: public BaseAst {
 	public:
-		vector<class Statment*> statement_list;
+		vector<class Statement*> statement_list;
 
-		StatementList() {}
+		StatementList() ;
 
 		void push_back(class Statement*);
 };
@@ -197,11 +197,11 @@ class AssignStmt: public Statement {
 	public:
 		class TerminalVariable* left;
 		class ArrayTerminalVariable* left_arr;
-		class Expr* right;
 		string op, left_type;
+		class Expr* right;
 
-		AssignStmt(class TerminalVariable*, string, class Expr*) {}
-		AssignStmt(class ArrayTerminalVariable*, string, class Expr*) {}
+		AssignStmt(class TerminalVariable*, string, class Expr*) ;
+		AssignStmt(class ArrayTerminalVariable*, string, class Expr*) ;
 };
 
 // Specific Statement class
@@ -211,7 +211,7 @@ class IfElseStmt: public Statement {
 		class Block* if_block;
 		class Block* else_block;
 
-		IfElseStmt(class Expr*, class Block*, class Block*) {}
+		IfElseStmt(class Expr*, class Block*, class Block*) ;
 };
 
 // Specific Statement class
@@ -220,7 +220,7 @@ class IfStmt: public Statement {
 		class Expr* cond;
 		class Block* if_block;
 
-		IfStmt(class Expr*, class Block*) {}
+		IfStmt(class Expr*, class Block*) ;
 };
 
 // Specific Statement class
@@ -232,8 +232,8 @@ class ForStmt: public Statement {
 		class Expr* right_cond; 
 		class Block* code_block;		
 
-		ForStmt(class TerminalVariable*, class Expr*, class Expr*, class Block*) {}
-		ForStmt(class ArrayTerminalVariable*, class Expr*, class Expr*, class Block*) {}
+		ForStmt(class TerminalVariable*, class Expr*, class Expr*, class Block*) ;
+		ForStmt(class ArrayTerminalVariable*, class Expr*, class Expr*, class Block*) ;
 };
 
 // Specific Statement class
@@ -241,7 +241,7 @@ class RetExpr: public Statement {
 	public:
 		class Expr* expr;
 
-		RetExpr(class Expr*) {}
+		RetExpr(class Expr*) ;
 };
 
 #endif // __CLASS_DEF__

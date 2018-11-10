@@ -65,10 +65,10 @@ VariableList::VariableList() {};
 void VariableList::push_back(class TerminalVariable* var) {
 	declarations.push_back(var);
 }
-void push_back(class ArrayTerminalVariable* var) {
+void VariableList::push_back(class ArrayTerminalVariable* var) {
 	declarations_array.push_back(var);
 }
-void set_type(string type) {
+void VariableList::set_type(string type) {
 	decleration_type = type;
 }
 
@@ -79,7 +79,7 @@ void MethodDeclList::push_back(class MethodDecl* decl) {
 }
 
 // Class-13
-MethodDecl::MethodDecl(string _return_type, class TerminalVariable* _method_name, class ParamList* param_list, class Block* _code_block) 
+MethodDecl::MethodDecl(string _return_type, class TerminalVariable* _method_name, class ParamList* _param_list, class Block* _code_block) 
 : return_type(_return_type), method_name(_method_name), param_list(_param_list), code_block(_code_block) {};
 MethodDecl::MethodDecl(string _return_type, class TerminalVariable* _method_name, class Block* _code_block) 
 : MethodDecl(_return_type, _method_name, new ParamList(), _code_block) {};
@@ -96,8 +96,8 @@ Block::Block(class DeclerationList* _decleration_list, class StatementList* _sta
 
 // Class-16
 StatementList::StatementList() {};
-void StatementList::push_back(class Statement* statement) {
-	statement_list.push_back(statement);
+void StatementList::push_back(class Statement* stat) {
+	statement_list.push_back(stat);
 }
 
 // Class-17
