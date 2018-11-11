@@ -184,9 +184,10 @@ class UnaryOpExpression: public Expr {
 class MethodCall: public Expr, public Statement {
 	public:
 		class MethodArgInpList* args;
+		class TerminalVariable* method_name;
 		
-		MethodCall() ;
-		MethodCall(class MethodArgInpList*) ;
+		MethodCall(class TerminalVariable*) ;
+		MethodCall(class TerminalVariable*, class MethodArgInpList*) ;
 
 		void accept(ASTVisitor* v) { v->visit(this); };
 };
@@ -399,6 +400,7 @@ class ForStmt: public Statement {
 		class Expr* start_cond;
 		class Expr* right_cond; 
 		class Block* code_block;		
+		string var_type;
 
 		ForStmt(class TerminalVariable*, class Expr*, class Expr*, class Block*) ;
 		ForStmt(class ArrayTerminalVariable*, class Expr*, class Expr*, class Block*) ;

@@ -1,84 +1,219 @@
 #include <bits/stdc++.h>
 #include "class_definition.h"
+#include "colormod.h"
+
+Color::Modifier red(Color::FG_RED);
+Color::Modifier green(Color::FG_GREEN);
+Color::Modifier blue(Color::FG_BLUE);
+Color::Modifier def(Color::FG_DEFAULT);
 
 using namespace std;
 
 SomeVisitor::SomeVisitor() {};
 
 void SomeVisitor::visit(class Program* node) {
-	cout << "Encountered Program node" << endl;
+	cout << "\n\nEncountered Program node" << endl;
 	node->field_decl->accept(this);
 	node->method_decl->accept(this);
 }
+
 void SomeVisitor::visit(class BinaryOpExpression* node) {
-	cout << "Encountered node" << endl;
+	cout << "Binary Op Expression: ";
+	cout << "Left Expr: "; node->left->accept(this);
+	cout << ", Op: " << *(node->op);
+	cout << ", Right Expr: "; node->right->accept(this);
+	// cout << endl;
 }
+
 void SomeVisitor::visit(class UnaryOpExpression* node) {
-	cout << "Encountered node" << endl;
+	cout << "Unary Op Expression: ";
+	cout << "Op: " << *(node->op);
+	cout << ", Expr: "; node->expr->accept(this);
+	// cout << endl;
 }
+
 void SomeVisitor::visit(class MethodCall* node) {
-	cout << "Encountered node" << endl;
+	cout << "Method call: ";
+	cout << "Method name: "; node->method_name->accept(this); cout << endl;
+	node->args->accept(this);
+	// cout << endl;
 }
+
 void SomeVisitor::visit(class MethodArgInpList* node) {
-	cout << "Encountered node" << endl;
+	int num = 1;
+	for (auto arg: node->arg_list) {
+		cout << "Method Arg #" << num << ": ";
+		arg->accept(this);
+		cout << ", ";
+		num++;
+	}
+	cout << endl;
 }
+
 void SomeVisitor::visit(class CalloutCall* node) {
-	cout << "Encountered node" << endl;
+	cout << "Callout Call: ";
+	cout << "function name: " << *(node->function_name);
+	cout << "args: "; node->args->accept(this);
+	// cout << endl; 
 }
+
 void SomeVisitor::visit(class CalloutArgList* node) {
-	cout << "Encountered node" << endl;
+	int num = 1;
+	for (auto arg: node->arg_list) {
+		cout << "Arg #" << num << ": ";
+		arg->accept(this);
+		cout << endl;
+		num++;
+	}
 }
+
 void SomeVisitor::visit(class TerminalVariable* node) {
-	cout << "Encountered node" << endl;
+	cout << *(node->variable_name);
 }
+
 void SomeVisitor::visit(class ArrayTerminalVariable* node) {
-	cout << "Encountered node" << endl;
+	node->arr_name->accept(this);
+
+	cout << " (With index: ";
+	
+	if (node->index_type == "int") cout << node->index_int << ")";
+	else if (node->index_type == "expr") {
+		node->index->accept(this);
+		cout << ")";
+	}
 }
+
 void SomeVisitor::visit(class FieldDeclList* node) {
-	cout << "Encountered node" << endl;
+	int decl_num = 1;
+	for (auto decleration: node->all_declerations) {
+		cout << "Field Decleration #" << decl_num << ": ";
+		decleration->accept(this);
+		decl_num++;
+	}
 }
+
 void SomeVisitor::visit(class VariableList* node) {
-	cout << "Encountered node" << endl;
+	cout << "Encountered Variable List node: ";
+	
+	for (auto normal: node->declarations) {
+		normal->accept(this); cout << ", ";
+	}
+	for (auto normal: node->declarations_array) {
+		normal->accept(this); cout << ", ";
+	}
+	cout << endl;
 }
+
 void SomeVisitor::visit(class MethodDeclList* node) {
-	cout << "Encountered node" << endl;
+	cout << "Encountered Method Decleration List node" << endl;
+	
+	int decl_num = 1;
+	for (auto decleration: node->method_declerations_list) {
+		cout << blue << "Method Decleration #" << decl_num << ": " << def;
+		decleration->accept(this);
+		decl_num++;
+	}
 }
-void SomeVisitor::visit(class MethodDecl* node) {
-	cout << "Encountered node" << endl;
+
+void SomeVisitor::visit(class MethodDecl* node) {	
+	cout << "Method name: ";
+	node->method_name->accept(this);
+	cout << ", parameter list: ";
+	node->param_list->accept(this);
+	cout << red << "Code block starts:\n" << def;
+	node->code_block->accept(this);
+	cout << red << "Code block ends\n\n" << def;
 }
+
 void SomeVisitor::visit(class ParamList* node) {
-	cout << "Encountered node" << endl;
+	for (auto param: node->parameters_list) {
+		cout << *(param.first) << " ";
+		param.second->accept(this);
+		cout << ", ";
+	}
+	cout << endl;
 }
 void SomeVisitor::visit(class Block* node) {
-	cout << "Encountered node" << endl;
+	node->decleration_list->accept(this);
+	node->statement_list->accept(this);
+	// cout << endl;
 }
 void SomeVisitor::visit(class StatementList* node) {
-	cout << "Encountered node" << endl;
+	int statement_num = 1;
+	for (auto statement: node->statement_list) {
+		cout << green << "Statement #" << statement_num << ":" << def << endl;
+		statement->accept(this);
+		// cout << endl;
+		statement_num++;
+	}
 }
+
 void SomeVisitor::visit(class AssignStmt* node) {
-	cout << "Encountered node" << endl;
+	cout << "Assign statement: ";
+	cout << "left: "; node->left->accept(this); cout << endl;
+	cout << "op: " << *(node->op) << endl;
+	cout << "right: "; node->right->accept(this); cout << endl;
 }
+
 void SomeVisitor::visit(class IfElseStmt* node) {
-	cout << "Encountered node" << endl;
+	cout << "If-else statement:" << endl;
+	cout << "condition: "; node->cond->accept(this); cout << endl;
+	cout << "if-block: " << endl; node->if_block->accept(this); cout << endl;
+	cout << "else-block: " << endl; node->else_block->accept(this); cout << endl;
 }
+
 void SomeVisitor::visit(class IfStmt* node) {
-	cout << "Encountered node" << endl;
+	cout << "If statement (No else): " << endl;
+	cout << "condition: "; node->cond->accept(this);
+	cout << "if-block: " << endl; node->if_block->accept(this); cout << endl;
 }
+
 void SomeVisitor::visit(class ForStmt* node) {
-	cout << "Encountered node" << endl;
+	cout << "For statement: ";
+	if (node->var_type == "variable") {
+		cout << "loop variable: "; node->loop_var->accept(this); cout << ", ";
+	}
+	else if (node->var_type == "arr") {
+		cout << "loop variable: "; node->loop_var_arr->accept(this); cout << ", ";
+	}
+	cout << "start condition: "; node->start_cond->accept(this); cout << ", ";
+	cout << "end condition: "; node->right_cond->accept(this); cout << ", ";
+	cout << "code block: "; node->code_block->accept(this); cout << endl;
 }
+
 void SomeVisitor::visit(class RetExpr* node) {
-	cout << "Encountered node" << endl;
+	cout << "Return statement: ";
+	cout << "expression: "; node->expr->accept(this); cout << endl;
 }
+
 void SomeVisitor::visit(class StringRetBrkContStatement* node) {
-	cout << "Encountered node" << endl;
+	cout << *(node->type) << " statement" << endl;
 }
+
 void SomeVisitor::visit(class Location* node) {
-	cout << "Encountered node" << endl;
+	cout << "Location: ";
+	if (node->location_type == "variable")
+		node->var_name->accept(this);
+	else if (node->location_type == "array") {
+		node->var_name->accept(this); cout << "(With index: "; node->index->accept(this); cout << ")" << endl;
+	}
 }
+
 void SomeVisitor::visit(class CalloutArg* node) {
-	cout << "Encountered node" << endl;
+	cout << "Callout statement: ";
+	if (node->arg_type == "string")
+		cout << *(node->arg_string) << endl;
+	else if (node->arg_type == "expr") {
+		node->arg_expr->accept(this); cout << endl;
+	}
 }
+
 void SomeVisitor::visit(class Literal* node) {
-	cout << "Encountered node" << endl;
+	cout << "Literal: ";
+	if (node->literal_type == "int") {
+		cout << node->lit_int;
+	}
+	else if (node->literal_type == "string") {
+		cout << *(node->lit_string);
+	}
 }

@@ -1619,13 +1619,13 @@ yyreduce:
 
   case 41:
 #line 168 "parser.y" /* yacc.c:1646  */
-    { (yyval.MethodCalls) = new MethodCall(); }
+    { (yyval.MethodCalls) = new MethodCall((yyvsp[-2].TerminalVariables)); }
 #line 1624 "parser.tab.c" /* yacc.c:1646  */
     break;
 
   case 42:
 #line 169 "parser.y" /* yacc.c:1646  */
-    { (yyvsp[-2].MethodArgInpLists)->push_back((yyvsp[-1].Exprs)); (yyval.MethodCalls) = new MethodCall((yyvsp[-2].MethodArgInpLists)); }
+    { (yyvsp[-2].MethodArgInpLists)->push_back((yyvsp[-1].Exprs)); (yyval.MethodCalls) = new MethodCall((yyvsp[-4].TerminalVariables), (yyvsp[-2].MethodArgInpLists)); }
 #line 1630 "parser.tab.c" /* yacc.c:1646  */
     break;
 

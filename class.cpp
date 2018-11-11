@@ -12,10 +12,10 @@ UnaryOpExpression::UnaryOpExpression(string *_op, class Expr* _expr)
 : op(_op), expr(_expr) {};
 
 // Class-3
-MethodCall::MethodCall(class MethodArgInpList* _args) 
-: args(_args) {};
-MethodCall::MethodCall()
-: MethodCall(new MethodArgInpList()) {};
+MethodCall::MethodCall(class TerminalVariable* _method_name, class MethodArgInpList* _args) 
+: method_name(_method_name), args(_args) {};
+MethodCall::MethodCall(class TerminalVariable* _method_name)
+: MethodCall(_method_name, new MethodArgInpList()) {};
 
 // Class-4
 MethodArgInpList::MethodArgInpList() {};
@@ -117,9 +117,9 @@ IfStmt::IfStmt(class Expr* _cond, class Block* _if_block)
 
 // Class-20
 ForStmt::ForStmt(class TerminalVariable* _loop_var, class Expr* _start_cond, class Expr* _right_cond, class Block* _code_block)
-: loop_var(_loop_var), start_cond(_start_cond), right_cond(_right_cond), code_block(_code_block) {};
+: loop_var(_loop_var), start_cond(_start_cond), right_cond(_right_cond), code_block(_code_block) { var_type = "variable"; };
 ForStmt::ForStmt(class ArrayTerminalVariable* _loop_var, class Expr* _start_cond, class Expr* _right_cond, class Block* _code_block)
-: loop_var_arr(_loop_var), start_cond(_start_cond), right_cond(_right_cond), code_block(_code_block) {};
+: loop_var_arr(_loop_var), start_cond(_start_cond), right_cond(_right_cond), code_block(_code_block) { var_type = "arr"; };
 
 // Class-21
 RetExpr::RetExpr(class Expr* _expr)

@@ -165,8 +165,8 @@ assign_op: EQ 																				{ $$ = $1; }
 	| PLUSEQ																				{ $$ = $1; }
 	;
 
-method_call: method_name LEFT_ROUND RIGHT_ROUND 											{ $$ = new MethodCall(); }
-	| method_name LEFT_ROUND multi_expr expr RIGHT_ROUND 									{ $3->push_back($4); $$ = new MethodCall($3); }
+method_call: method_name LEFT_ROUND RIGHT_ROUND 											{ $$ = new MethodCall($1); }
+	| method_name LEFT_ROUND multi_expr expr RIGHT_ROUND 									{ $3->push_back($4); $$ = new MethodCall($1, $3); }
 	;
 
 callout_call: CALLOUT LEFT_ROUND string_literal RIGHT_ROUND 								{ $$ = new CalloutCall($3); }
