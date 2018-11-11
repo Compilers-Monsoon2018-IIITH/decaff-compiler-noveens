@@ -6,8 +6,7 @@ using namespace std;
 
 union Node{
 	int num;
-	string lit;
-	char char_lit;
+	string* lit;
 	class Program* Programs;
 	class Expr* Exprs;
 	class BinaryOpExpression* BinaryOpExpressions;
@@ -16,7 +15,6 @@ union Node{
 	class MethodArgInpList* MethodArgInpLists;
 	class CalloutCall* CalloutCalls;
 	class CalloutArgList* CalloutArgLists;
-	class ExprIntCharBool* ExprIntCharBools;
 	class TerminalVariable* TerminalVariables;
 	class ArrayTerminalVariable* ArrayTerminalVariables;
 	class FieldDeclList* FieldDeclLists;
@@ -38,44 +36,40 @@ union Node{
 	class Literal* Literals;
 	Node() {
 		num = 0;
-		lit = "";
-		char_lit = 'a';
-		Program* Programs = NULL;
-		Expr* Exprs = NULL;
-		BinaryOpExpression* BinaryOpExpressions = NULL;
-		UnaryOpExpression* UnaryOpExpressions = NULL;
-		MethodCall* MethodCalls = NULL;
-		MethodArgInpList* MethodArgInpLists = NULL;
-		CalloutCall* CalloutCalls = NULL;
-		CalloutArgList* CalloutArgLists = NULL;
-		ExprIntCharBool* ExprIntCharBools = NULL;
-		TerminalVariable* TerminalVariables = NULL;
-		ArrayTerminalVariable* ArrayTerminalVariables = NULL;
-		FieldDeclList* FieldDeclLists = NULL;
-		VariableList* VariableLists = NULL;
-		MethodDeclList* MethodDeclLists = NULL;
-		MethodDecl* MethodDecls = NULL;
-		ParamList* ParamLists = NULL;
-		Block* Blocks = NULL;
-		Statement* Statements = NULL;
-		StatementList* StatementLists = NULL;
-		AssignStmt* AssignStmts = NULL;
-		IfElseStmt* IfElseStmts = NULL;
-		IfStmt* IfStmts = NULL;
-		ForStmt* ForStmts = NULL;
-		RetExpr* RetExprs = NULL;
-		StringRetBrkContStatement* StringRetBrkContStatements = NULL;
-		Location* Locations = NULL;
-		CalloutArg* CalloutArgs = NULL;
-		Literal* Literals = NULL;
+		lit = NULL;
+		Programs = NULL;
+		Exprs = NULL;
+		BinaryOpExpressions = NULL;
+		UnaryOpExpressions = NULL;
+		MethodCalls = NULL;
+		MethodArgInpLists = NULL;
+		CalloutCalls = NULL;
+		CalloutArgLists = NULL;
+		TerminalVariables = NULL;
+		ArrayTerminalVariables = NULL;
+		FieldDeclLists = NULL;
+		VariableLists = NULL;
+		MethodDeclLists = NULL;
+		MethodDecls = NULL;
+		ParamLists = NULL;
+		Blocks = NULL;
+		Statements = NULL;
+		StatementLists = NULL;
+		AssignStmts = NULL;
+		IfElseStmts = NULL;
+		IfStmts = NULL;
+		ForStmts = NULL;
+		RetExprs = NULL;
+		StringRetBrkContStatements = NULL;
+		Locations = NULL;
+		CalloutArgs = NULL;
+		Literals = NULL;
 	}
 	~Node(){}
 };
 typedef union Node YYSTYPE;
 
 #define YYSTYPE_IS_DECLARED 1
-
-class BaseAst;
 
 class ASTVisitor{
 	public:
@@ -88,7 +82,8 @@ class BaseAst {
 		virtual void accept(class ASTVisitor& v) {
 			v.visit(*this);
 		}
-		virtual ~BaseAst() = 0;
+		BaseAst() {} // Defined Here itself
+		// virtual ~BaseAst() = 0;
 };
 
 class Program: public BaseAst {
@@ -102,30 +97,32 @@ class Program: public BaseAst {
 /* Final Variables */
 class Expr: public BaseAst {
 	public:
-		virtual ~Expr() = 0; // Abstract class, can't be instantiated
+		Expr() {} // Defined Here itself
+		// virtual ~Expr() = 0; // Abstract class, can't be instantiated
 };
 
 // Base class
 class Statement: public BaseAst {
 	public:
-		virtual ~Statement() = 0; // Abstract class, can't be instantiated
+		Statement() {} // Defined Here itself
+		// virtual ~Statement() = 0; // Abstract class, can't be instantiated
 };
 
 class BinaryOpExpression: public Expr {
 	public:
-		string op;
+		string *op;
 		class Expr* left;
 		class Expr* right;
 
-		BinaryOpExpression(class Expr*, string, class Expr*) ;
+		BinaryOpExpression(class Expr*, string*, class Expr*) ;
 };
 
 class UnaryOpExpression: public Expr {
 	public:
-		string op;
+		string *op;
 		class Expr* expr;
 
-		UnaryOpExpression(string, class Expr*) ;
+		UnaryOpExpression(string*, class Expr*) ;
 };
 
 class MethodCall: public Expr, public Statement {
@@ -147,11 +144,11 @@ class MethodArgInpList: public BaseAst {
 
 class CalloutCall: public Expr, public Statement {
 	public:
-		string function_name;
+		string *function_name;
 		class CalloutArgList* args;
 		
-		CalloutCall(string) ;
-		CalloutCall(string, class CalloutArgList*) ;
+		CalloutCall(string*) ;
+		CalloutCall(string*, class CalloutArgList*) ;
 };
 
 class CalloutArgList: public BaseAst {
@@ -173,33 +170,21 @@ class Location: public Expr {
 		Location(class TerminalVariable*, class Expr*) ;
 };
 
-class ExprIntCharBool: public Expr {
-	public:
-		int this_int;
-		char this_char;
-		bool this_bool;
-		string what_type;
-
-		ExprIntCharBool(int) ;
-		ExprIntCharBool(char) ;
-		ExprIntCharBool(bool) ;
-};
-
 class CalloutArg: public BaseAst {
 	public:
 		class Expr* arg_expr;
-		string arg_string;
+		string *arg_string;
 		string arg_type = "";
 
 		CalloutArg(class Expr*) ;
-		CalloutArg(string) ;
+		CalloutArg(string*) ;
 };
 
 class TerminalVariable: public Expr {
 	public:
-		string variable_name;
+		string *variable_name;
 		
-		TerminalVariable(string) ;
+		TerminalVariable(string*) ;
 };
 
 class ArrayTerminalVariable: public Expr {
@@ -230,13 +215,13 @@ class VariableList: public BaseAst {
 	public:	
 		vector<class TerminalVariable*> declarations;
 		vector<class ArrayTerminalVariable*> declarations_array;
-		string decleration_type;
+		string *decleration_type;
 		
 		VariableList() ;
 		
 		void push_back(class TerminalVariable*);
 		void push_back(class ArrayTerminalVariable*);
-		void set_type(string);
+		void set_type(string*);
 };
 
 class MethodDeclList: public BaseAst {
@@ -254,22 +239,22 @@ eg. int function_name(int a, bool b, int c) <block>
 
 class MethodDecl: public BaseAst {
 	public:	
-		string return_type;
+		string *return_type;
 		class TerminalVariable* method_name;
 		class ParamList* param_list;
 		class Block* code_block;
 
-		MethodDecl(string, class TerminalVariable*, class ParamList*, class Block*) ;
-		MethodDecl(string, class TerminalVariable*, class Block*) ;
+		MethodDecl(string*, class TerminalVariable*, class ParamList*, class Block*) ;
+		MethodDecl(string*, class TerminalVariable*, class Block*) ;
 };
 
 class ParamList: public BaseAst {
 	public:	
-		vector<pair<string, class TerminalVariable*>> parameters_list;
+		vector<pair<string*, class TerminalVariable*>> parameters_list;
 
 		ParamList() ;
 
-		void push_back(string, class TerminalVariable*);
+		void push_back(string*, class TerminalVariable*);
 };
 
 /* Statements */
@@ -296,10 +281,10 @@ class Block: public Statement {
 class AssignStmt: public Statement {
 	public:
 		class Location* left;
-		string op;
+		string *op;
 		class Expr* right;
 
-		AssignStmt(class Location*, string, class Expr*) ;
+		AssignStmt(class Location*, string*, class Expr*) ;
 };
 
 // Specific Statement class
@@ -344,20 +329,19 @@ class RetExpr: public Statement {
 
 class StringRetBrkContStatement: public Statement {
 	public:
-		string type;
+		string *type;
 
-		StringRetBrkContStatement(string) ;
+		StringRetBrkContStatement(string*) ;
 };
 
-class Literal: public BaseAst {
+class Literal: public Expr {
 	public:
 		int lit_int;
-		char lit_char;
-		string lit_string, literal_type;
+		string *lit_string;
+		string literal_type;
 
 		Literal(int) ;
-		Literal(char) ;
-		Literal(string) ;
+		Literal(string*) ;
 };
 
 #endif // __CLASS_DEF__

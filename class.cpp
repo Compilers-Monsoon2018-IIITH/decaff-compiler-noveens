@@ -4,11 +4,11 @@
 using namespace std;
 
 // Class-1
-BinaryOpExpression::BinaryOpExpression(class Expr* _left, string _op, class Expr* _right)
+BinaryOpExpression::BinaryOpExpression(class Expr* _left, string *_op, class Expr* _right)
 : op(_op), left(_left), right(_right) {};
 
 // Class-2
-UnaryOpExpression::UnaryOpExpression(string _op, class Expr* _expr) 
+UnaryOpExpression::UnaryOpExpression(string *_op, class Expr* _expr) 
 : op(_op), expr(_expr) {};
 
 // Class-3
@@ -24,9 +24,9 @@ void MethodArgInpList::push_back(class Expr* arg) {
 }
 
 // Class-5
-CalloutCall::CalloutCall(string _function_name, class CalloutArgList* _args) 
+CalloutCall::CalloutCall(string *_function_name, class CalloutArgList* _args) 
 : function_name(_function_name), args(_args) {};
-CalloutCall::CalloutCall(string _function_name)
+CalloutCall::CalloutCall(string *_function_name)
 : CalloutCall(_function_name, new CalloutArgList()) {};
 
 // Class-6
@@ -38,7 +38,7 @@ void CalloutArgList::push_back(class CalloutArg* arg) {
 //
 CalloutArg::CalloutArg(class Expr* arg)
 : arg_expr(arg) { arg_type = "expr"; };
-CalloutArg::CalloutArg(string arg)
+CalloutArg::CalloutArg(string *arg)
 : arg_string(arg) { arg_type = "string"; };
 
 //
@@ -47,16 +47,8 @@ Location::Location(class TerminalVariable* _var_name)
 Location::Location(class TerminalVariable* _var_name, class Expr* _index)
 : var_name(_var_name), index(_index) { location_type = "array"; };
 
-// Class-7
-ExprIntCharBool::ExprIntCharBool(int var)
-: this_int(var) { what_type = "int"; };
-ExprIntCharBool::ExprIntCharBool(char var)
-: this_char(var) { what_type = "char"; };
-ExprIntCharBool::ExprIntCharBool(bool var)
-: this_bool(var) { what_type = "bool"; };
-
 // Class-8
-TerminalVariable::TerminalVariable(string _variable_name)
+TerminalVariable::TerminalVariable(string *_variable_name)
 : variable_name(_variable_name) {};
 
 // Class-9
@@ -79,7 +71,7 @@ void VariableList::push_back(class TerminalVariable* var) {
 void VariableList::push_back(class ArrayTerminalVariable* var) {
 	declarations_array.push_back(var);
 }
-void VariableList::set_type(string type) {
+void VariableList::set_type(string *type) {
 	decleration_type = type;
 }
 
@@ -90,14 +82,14 @@ void MethodDeclList::push_back(class MethodDecl* decl) {
 }
 
 // Class-13
-MethodDecl::MethodDecl(string _return_type, class TerminalVariable* _method_name, class ParamList* _param_list, class Block* _code_block) 
+MethodDecl::MethodDecl(string *_return_type, class TerminalVariable* _method_name, class ParamList* _param_list, class Block* _code_block) 
 : return_type(_return_type), method_name(_method_name), param_list(_param_list), code_block(_code_block) {};
-MethodDecl::MethodDecl(string _return_type, class TerminalVariable* _method_name, class Block* _code_block) 
+MethodDecl::MethodDecl(string *_return_type, class TerminalVariable* _method_name, class Block* _code_block) 
 : MethodDecl(_return_type, _method_name, new ParamList(), _code_block) {};
 
 // Class-14
 ParamList::ParamList() {};
-void ParamList::push_back(string type, class TerminalVariable* var) {
+void ParamList::push_back(string *type, class TerminalVariable* var) {
 	parameters_list.push_back(make_pair(type, var));
 }
 
@@ -112,7 +104,7 @@ void StatementList::push_back(class Statement* stat) {
 }
 
 // Class-17
-AssignStmt::AssignStmt(class Location* _left, string _op, class Expr* _right) 
+AssignStmt::AssignStmt(class Location* _left, string *_op, class Expr* _right) 
 : left(_left), op(_op), right(_right) {};
 
 // Class-18
@@ -134,7 +126,7 @@ RetExpr::RetExpr(class Expr* _expr)
 : expr(_expr) {};
 
 // Class-22
-StringRetBrkContStatement::StringRetBrkContStatement(string _type)
+StringRetBrkContStatement::StringRetBrkContStatement(string *_type)
 : type(_type) {};
 
 // Class-23
@@ -143,8 +135,6 @@ Program::Program(class FieldDeclList* _field_decl, class MethodDeclList* _method
 
 //
 Literal::Literal(int _lit_int)
-: lit_int(_lit_int) {};
-Literal::Literal(char _lit_char)
-: lit_char(_lit_char) {};
-Literal::Literal(string _lit_string)
-: lit_string(_lit_string) {};
+: lit_int(_lit_int) { literal_type = "int"; };
+Literal::Literal(string *_lit_string)
+: lit_string(_lit_string) { literal_type = "string"; };

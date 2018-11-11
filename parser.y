@@ -1,6 +1,6 @@
 %{
 
-#include <stdio.h>
+#include <bits/stdc++.h>
 #include "class_definition.h"
 int fl = 0;
 extern "C" int yylex();
@@ -9,7 +9,6 @@ extern "C" FILE *yyin;
 extern "C" int line_num;
 extern union Node yylval;
 extern "C" int errors;
-void yyerror(const char *s);
 class Prog* start = NULL;
 int errors=0;
 
@@ -65,7 +64,7 @@ int errors=0;
 %token <num> REGEX_HEX
 %token <lit> REGEX_ID
 %token <num> REGEX_DECIMAL
-%token <char_lit> REGEX_CHAR
+%token <lit> REGEX_CHAR
 %token <lit> REGEX_STRING
 
 %type <Programs> program;
@@ -99,7 +98,7 @@ int errors=0;
 %type <TerminalVariables> id;
 %type <num> int_literal;
 %type <lit> bool_literal;
-%type <char_lit> char_literal;
+%type <lit> char_literal;
 %type <lit> string_literal;
 
 %%
@@ -124,10 +123,10 @@ method_decl: 																				{ $$ = new MethodDeclList(); }
 	| method_decl method_decls																{ $$->push_back($2); }
 	;
 
-method_decls: type id LEFT_ROUND RIGHT_ROUND block											{ $$ = new MethodDecl(string($1), $2, $5); }
-	| type id LEFT_ROUND param type id RIGHT_ROUND block									{ $4->push_back($5, $6); $$ = new MethodDecl(string($1), $2, $4, $8); }
-	| VOID id LEFT_ROUND RIGHT_ROUND block													{ $$ = new MethodDecl(string($1), $2, $5); }
-	| VOID id LEFT_ROUND param type id RIGHT_ROUND block									{ $4->push_back($5, $6); $$ = new MethodDecl(string($1), $2, $4, $8); }
+method_decls: type id LEFT_ROUND RIGHT_ROUND block											{ $$ = new MethodDecl($1, $2, $5); }
+	| type id LEFT_ROUND param type id RIGHT_ROUND block									{ $4->push_back($5, $6); $$ = new MethodDecl($1, $2, $4, $8); }
+	| VOID id LEFT_ROUND RIGHT_ROUND block													{ $$ = new MethodDecl($1, $2, $5); }
+	| VOID id LEFT_ROUND param type id RIGHT_ROUND block									{ $4->push_back($5, $6); $$ = new MethodDecl($1, $2, $4, $8); }
 	;
 
 param: 																						{ $$ = new ParamList(); }
@@ -149,8 +148,8 @@ multi_statement: 																			{ $$ = new StatementList(); }
 	| multi_statement statement 															{ $$->push_back($2); }
 	;
 
-type: INT 																					{ $$ = string($1); }
-	| BOOL 																					{ $$ = string($1); }
+type: INT 																					{ $$ = $1; }
+	| BOOL 																					{ $$ = $1; }
 	;
 
 statement: location assign_op expr SEMICOLON 												{ $$ = new AssignStmt($1, $2, $3); }
@@ -166,9 +165,9 @@ statement: location assign_op expr SEMICOLON 												{ $$ = new AssignStmt($
 	| block 																				{ $$ = $1; }
 	;
 
-assign_op: EQ 																				{ $$ = string($1); }
-	| MINEQ																					{ $$ = string($1); }
-	| PLUSEQ																				{ $$ = string($1); }
+assign_op: EQ 																				{ $$ = $1; }
+	| MINEQ																					{ $$ = $1; }
+	| PLUSEQ																				{ $$ = $1; }
 	;
 
 method_call: method_name LEFT_ROUND RIGHT_ROUND 											{ $$ = new MethodCall(); }
@@ -197,7 +196,7 @@ location: id 																				{ $$ = new Location($1); }
 expr: location 																				{ $$ = $1; }
 	| method_call 																			{ $$ = $1; }
 	| callout_call 																			{ $$ = $1; }
-	| literal 																				{ $$ = new ExprIntCharBool($1); }
+	| literal 																				{ $$ = $1; }
 	| expr bin_op expr /*FIXXXXXXXXXXXXX*/ 													{ $$ = new BinaryOpExpression($1, $2, $3); }
 	| MINUS expr 																			{ $$ = new UnaryOpExpression($1, $2); }
 	| NOT expr 																				{ $$ = new UnaryOpExpression($1, $2); }
@@ -208,53 +207,53 @@ callout_arg: expr 																			{ $$ = new CalloutArg($1); }
 	| string_literal 																		{ $$ = new CalloutArg($1); }
 	;
 
-bin_op: arith_op 																			{ $$ = string($1); }
-	| rel_op																				{ $$ = string($1); }
-	| eq_op 																				{ $$ = string($1); }
-	| cond_op 																				{ $$ = string($1); }
+bin_op: arith_op 																			{ $$ = $1; }
+	| rel_op																				{ $$ = $1; }
+	| eq_op 																				{ $$ = $1; }
+	| cond_op 																				{ $$ = $1; }
 	;
 
-arith_op: PLUS 																				{ $$ = string($1); }
-	| MINUS 																				{ $$ = string($1); }
-	| MUL 																					{ $$ = string($1); }
-	| DIV 																					{ $$ = string($1); }
-	| MOD 																					{ $$ = string($1); }
+arith_op: PLUS 																				{ $$ = $1; }
+	| MINUS 																				{ $$ = $1; }
+	| MUL 																					{ $$ = $1; }
+	| DIV 																					{ $$ = $1; }
+	| MOD 																					{ $$ = $1; }
 	;
 
-rel_op: GT  																				{ $$ = string($1); }
-	| LT  																					{ $$ = string($1); }
-	| GE 																					{ $$ = string($1); }
-	| LE 																					{ $$ = string($1); }
+rel_op: GT  																				{ $$ = $1; }
+	| LT  																					{ $$ = $1; }
+	| GE 																					{ $$ = $1; }
+	| LE 																					{ $$ = $1; }
 	;
 
-eq_op: EQEQ  																				{ $$ = string($1); }
-	| NEQ 																					{ $$ = string($1); }
+eq_op: EQEQ  																				{ $$ = $1; }
+	| NEQ 																					{ $$ = $1; }
 	;
 
-cond_op: ANDAND 																			{ $$ = string($1); }
-	| OROR 																					{ $$ = string($1); }
+cond_op: ANDAND 																			{ $$ = $1; }
+	| OROR 																					{ $$ = $1; }
 	;
 
-literal: int_literal 																		{ $$ = new Literal(int($1)); }
-	| char_literal 																			{ $$ = new Literal(char($1)); }
-	| bool_literal 																			{ $$ = new Literal(string($1)); }
+literal: int_literal 																		{ $$ = new Literal($1); }
+	| char_literal 																			{ $$ = new Literal($1); }
+	| bool_literal 																			{ $$ = new Literal($1); }
 	;
 
-id: REGEX_ID 																				{ $$ = new TerminalVariable(string($1)); }
+id: REGEX_ID 																				{ $$ = new TerminalVariable($1); }
 	;
 
-int_literal: REGEX_DECIMAL 																	{ $$ = int($1); }
-	| REGEX_HEX 																			{ $$ = int($1); }
+int_literal: REGEX_DECIMAL 																	{ $$ = $1; }
+	| REGEX_HEX 																			{ $$ = $1; }
 	;
 
-bool_literal: TRUE 																			{ $$ = string($1); }
-	| FALSE 																				{ $$ = string($1); }
+bool_literal: TRUE 																			{ $$ = $1; }
+	| FALSE 																				{ $$ = $1; }
 	;
 
-char_literal: /*SQUOT CHAR SQUOT*/ REGEX_CHAR 												{ $$ = char($1); }
+char_literal: /*SQUOT CHAR SQUOT*/ REGEX_CHAR 												{ $$ = $1; }
 	;
 
-string_literal: /*DQUOT multichar DQUOT*/ REGEX_STRING 										{ $$ = string($1); }
+string_literal: /*DQUOT multichar DQUOT*/ REGEX_STRING 										{ $$ = $1; }
 	;
 
 %%
@@ -262,6 +261,6 @@ string_literal: /*DQUOT multichar DQUOT*/ REGEX_STRING 										{ $$ = string($
 int main(int argc, char **argv) {
 	yyparse();
 }
-int yyerror(char *s) {
-	fprintf(stderr, "error: %s\n", s);
+void yyerror (char const *s) {
+	fprintf (stderr, "%s at statement -> %d\nNot parsed completely\n", s,yylineno);
 }

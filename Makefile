@@ -15,14 +15,14 @@
 # 	bison -o parser.cc --defines=parser.h parser.y
 
 # scanner.cc: scanner.l
-# 	flex -o scanner.cc scanner.l
+	# flex -o scanner.cc scanner.l
 
 
-TARGET=mycomp
+TARGET=decaf
 all=$(TARGET)
 CC = g++
-CFLAGS = -lfl `llvm-config-3.8 --cxxflags --cppflags mcjit native --ldflags --libs core` -ltinfo -lpthread -ldl
-FLAGS=-w -Wno-deprecated -g -std=c++14
+CFLAGS = -lfl `llvm-config-6.0 --cxxflags --cppflags mcjit native --ldflags --libs core` -ltinfo -lpthread -ldl
+FLAGS = -w -Wno-deprecated -g --std=c++14
 all: $(TARGET)
 $(TARGET): lex.yy.c parser.tab.c class.cpp class_definition.h
 	$(CC) $(FLAGS) lex.yy.c parser.tab.c class.cpp $(CFLAGS)
