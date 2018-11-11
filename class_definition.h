@@ -75,21 +75,67 @@ typedef union Node YYSTYPE;
 class ASTVisitor {
 	public:
 		virtual void visit(class Program*) = 0;
+		virtual void visit(class BinaryOpExpression*) = 0;
+		virtual void visit(class UnaryOpExpression*) = 0;
+		virtual void visit(class MethodCall*) = 0;
+		virtual void visit(class MethodArgInpList*) = 0;
+		virtual void visit(class CalloutCall*) = 0;
+		virtual void visit(class CalloutArgList*) = 0;
+		virtual void visit(class TerminalVariable*) = 0;
+		virtual void visit(class ArrayTerminalVariable*) = 0;
+		virtual void visit(class FieldDeclList*) = 0;
+		virtual void visit(class VariableList*) = 0;
+		virtual void visit(class MethodDeclList*) = 0;
+		virtual void visit(class MethodDecl*) = 0;
+		virtual void visit(class ParamList*) = 0;
+		virtual void visit(class Block*) = 0;
+		virtual void visit(class StatementList*) = 0;
+		virtual void visit(class AssignStmt*) = 0;
+		virtual void visit(class IfElseStmt*) = 0;
+		virtual void visit(class IfStmt*) = 0;
+		virtual void visit(class ForStmt*) = 0;
+		virtual void visit(class RetExpr*) = 0;
+		virtual void visit(class StringRetBrkContStatement*) = 0;
+		virtual void visit(class Location*) = 0;
+		virtual void visit(class CalloutArg*) = 0;
+		virtual void visit(class Literal*) = 0;
 };
 
 class SomeVisitor: public ASTVisitor {
 	public:
-		void visit(class Program*);
-
 		SomeVisitor() ;
+
+		void visit(class Program*);
+		void visit(class BinaryOpExpression*);
+		void visit(class UnaryOpExpression*);
+		void visit(class MethodCall*);
+		void visit(class MethodArgInpList*);
+		void visit(class CalloutCall*);
+		void visit(class CalloutArgList*);
+		void visit(class TerminalVariable*);
+		void visit(class ArrayTerminalVariable*);
+		void visit(class FieldDeclList*);
+		void visit(class VariableList*);
+		void visit(class MethodDeclList*);
+		void visit(class MethodDecl*);
+		void visit(class ParamList*);
+		void visit(class Block*);
+		void visit(class StatementList*);
+		void visit(class AssignStmt*);
+		void visit(class IfElseStmt*);
+		void visit(class IfStmt*);
+		void visit(class ForStmt*);
+		void visit(class RetExpr*);
+		void visit(class StringRetBrkContStatement*);
+		void visit(class Location*);
+		void visit(class CalloutArg*);
+		void visit(class Literal*);
 };
 
 /* Base AST Node class, inherited by every other class */
 class BaseAst {
 	public:
-		virtual void accept(ASTVisitor* v) {}; // = 0
-		BaseAst() {} // Defined Here itself
-		// virtual ~BaseAst() = 0;
+		virtual void accept(ASTVisitor* v) = 0;
 };
 
 class Program: public BaseAst {
@@ -98,20 +144,20 @@ class Program: public BaseAst {
 		class MethodDeclList* method_decl;
 
 		Program(class FieldDeclList*, class MethodDeclList*) ;
+
+		void accept(ASTVisitor* v) { v->visit(this); };
 };
 
 /* Final Variables */
 class Expr: public BaseAst {
 	public:
 		Expr() {} // Defined Here itself
-		// virtual ~Expr() = 0; // Abstract class, can't be instantiated
 };
 
 // Base class
 class Statement: public BaseAst {
 	public:
 		Statement() {} // Defined Here itself
-		// virtual ~Statement() = 0; // Abstract class, can't be instantiated
 };
 
 class BinaryOpExpression: public Expr {
@@ -121,6 +167,8 @@ class BinaryOpExpression: public Expr {
 		class Expr* right;
 
 		BinaryOpExpression(class Expr*, string*, class Expr*) ;
+
+		void accept(ASTVisitor* v) { v->visit(this); };
 };
 
 class UnaryOpExpression: public Expr {
@@ -129,6 +177,8 @@ class UnaryOpExpression: public Expr {
 		class Expr* expr;
 
 		UnaryOpExpression(string*, class Expr*) ;
+
+		void accept(ASTVisitor* v) { v->visit(this); };
 };
 
 class MethodCall: public Expr, public Statement {
@@ -137,6 +187,8 @@ class MethodCall: public Expr, public Statement {
 		
 		MethodCall() ;
 		MethodCall(class MethodArgInpList*) ;
+
+		void accept(ASTVisitor* v) { v->visit(this); };
 };
 
 class MethodArgInpList: public BaseAst {
@@ -146,6 +198,7 @@ class MethodArgInpList: public BaseAst {
 		MethodArgInpList() ;
 
 		void push_back(class Expr*);
+		void accept(ASTVisitor* v) { v->visit(this); };
 };
 
 class CalloutCall: public Expr, public Statement {
@@ -155,6 +208,8 @@ class CalloutCall: public Expr, public Statement {
 		
 		CalloutCall(string*) ;
 		CalloutCall(string*, class CalloutArgList*) ;
+
+		void accept(ASTVisitor* v) { v->visit(this); };
 };
 
 class CalloutArgList: public BaseAst {
@@ -164,6 +219,7 @@ class CalloutArgList: public BaseAst {
 		CalloutArgList() ;
 
 		void push_back(class CalloutArg*);
+		void accept(ASTVisitor* v) { v->visit(this); };
 };
 
 class Location: public Expr {
@@ -174,6 +230,8 @@ class Location: public Expr {
 
 		Location(class TerminalVariable*) ;
 		Location(class TerminalVariable*, class Expr*) ;
+
+		void accept(ASTVisitor* v) { v->visit(this); };
 };
 
 class CalloutArg: public BaseAst {
@@ -184,6 +242,8 @@ class CalloutArg: public BaseAst {
 
 		CalloutArg(class Expr*) ;
 		CalloutArg(string*) ;
+
+		void accept(ASTVisitor* v) { v->visit(this); };
 };
 
 class TerminalVariable: public Expr {
@@ -191,6 +251,8 @@ class TerminalVariable: public Expr {
 		string *variable_name;
 		
 		TerminalVariable(string*) ;
+
+		void accept(ASTVisitor* v) { v->visit(this); };
 };
 
 class ArrayTerminalVariable: public Expr {
@@ -202,6 +264,8 @@ class ArrayTerminalVariable: public Expr {
 
 		ArrayTerminalVariable(class TerminalVariable*, class Expr*) ;
 		ArrayTerminalVariable(class TerminalVariable*, int) ;
+
+		void accept(ASTVisitor* v) { v->visit(this); };
 };
 
 /* Field decleration
@@ -215,6 +279,7 @@ class FieldDeclList: public BaseAst {
 		FieldDeclList() ;
 		
 		void push_back(class VariableList*);
+		void accept(ASTVisitor* v) { v->visit(this); };
 };
 
 class VariableList: public BaseAst {
@@ -228,6 +293,7 @@ class VariableList: public BaseAst {
 		void push_back(class TerminalVariable*);
 		void push_back(class ArrayTerminalVariable*);
 		void set_type(string*);
+		void accept(ASTVisitor* v) { v->visit(this); };
 };
 
 class MethodDeclList: public BaseAst {
@@ -237,6 +303,7 @@ class MethodDeclList: public BaseAst {
 		MethodDeclList() ;
 		
 		void push_back(class MethodDecl*);
+		void accept(ASTVisitor* v) { v->visit(this); };
 };
 
 /* Method decleration
@@ -252,6 +319,8 @@ class MethodDecl: public BaseAst {
 
 		MethodDecl(string*, class TerminalVariable*, class ParamList*, class Block*) ;
 		MethodDecl(string*, class TerminalVariable*, class Block*) ;
+
+		void accept(ASTVisitor* v) { v->visit(this); };
 };
 
 class ParamList: public BaseAst {
@@ -261,6 +330,7 @@ class ParamList: public BaseAst {
 		ParamList() ;
 
 		void push_back(string*, class TerminalVariable*);
+		void accept(ASTVisitor* v) { v->visit(this); };
 };
 
 /* Statements */
@@ -273,6 +343,7 @@ class StatementList: public BaseAst {
 		StatementList() ;
 
 		void push_back(class Statement*);
+		void accept(ASTVisitor* v) { v->visit(this); };
 };
 
 class Block: public Statement {
@@ -281,6 +352,8 @@ class Block: public Statement {
 		class StatementList* statement_list;
 
 		Block(class FieldDeclList*, class StatementList*) ;
+
+		void accept(ASTVisitor* v) { v->visit(this); };
 };
 
 // Specific Statement class
@@ -291,6 +364,8 @@ class AssignStmt: public Statement {
 		class Expr* right;
 
 		AssignStmt(class Location*, string*, class Expr*) ;
+
+		void accept(ASTVisitor* v) { v->visit(this); };
 };
 
 // Specific Statement class
@@ -301,6 +376,8 @@ class IfElseStmt: public Statement {
 		class Block* else_block;
 
 		IfElseStmt(class Expr*, class Block*, class Block*) ;
+
+		void accept(ASTVisitor* v) { v->visit(this); };
 };
 
 // Specific Statement class
@@ -310,6 +387,8 @@ class IfStmt: public Statement {
 		class Block* if_block;
 
 		IfStmt(class Expr*, class Block*) ;
+
+		void accept(ASTVisitor* v) { v->visit(this); };
 };
 
 // Specific Statement class
@@ -323,6 +402,8 @@ class ForStmt: public Statement {
 
 		ForStmt(class TerminalVariable*, class Expr*, class Expr*, class Block*) ;
 		ForStmt(class ArrayTerminalVariable*, class Expr*, class Expr*, class Block*) ;
+
+		void accept(ASTVisitor* v) { v->visit(this); };
 };
 
 // Specific Statement class
@@ -331,6 +412,8 @@ class RetExpr: public Statement {
 		class Expr* expr;
 
 		RetExpr(class Expr*) ;
+
+		void accept(ASTVisitor* v) { v->visit(this); };
 };
 
 class StringRetBrkContStatement: public Statement {
@@ -338,6 +421,8 @@ class StringRetBrkContStatement: public Statement {
 		string *type;
 
 		StringRetBrkContStatement(string*) ;
+
+		void accept(ASTVisitor* v) { v->visit(this); };
 };
 
 class Literal: public Expr {
@@ -348,6 +433,8 @@ class Literal: public Expr {
 
 		Literal(int) ;
 		Literal(string*) ;
+
+		void accept(ASTVisitor* v) { v->visit(this); };
 };
 
 #endif // __CLASS_DEF__
