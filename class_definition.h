@@ -71,17 +71,23 @@ typedef union Node YYSTYPE;
 
 #define YYSTYPE_IS_DECLARED 1
 
-class ASTVisitor{
+/* Visitor Classes */
+class ASTVisitor {
 	public:
-		virtual void visit(class BaseAst&) = 0;
+		virtual void visit(class Program*) = 0;
+};
+
+class SomeVisitor: public ASTVisitor {
+	public:
+		void visit(class Program*);
+
+		SomeVisitor() ;
 };
 
 /* Base AST Node class, inherited by every other class */
 class BaseAst {
 	public:
-		virtual void accept(class ASTVisitor& v) {
-			v.visit(*this);
-		}
+		virtual void accept(ASTVisitor* v) {}; // = 0
 		BaseAst() {} // Defined Here itself
 		// virtual ~BaseAst() = 0;
 };

@@ -80,21 +80,15 @@ extern int yydebug;
     NEQ = 290,
     ANDAND = 291,
     OROR = 292,
-    ALPHA = 293,
-    DIGIT = 294,
-    TRUE = 295,
-    FALSE = 296,
-    SQUOT = 297,
-    DQUOT = 298,
-    COMMA = 299,
-    SEMICOLON = 300,
-    CHAR = 301,
-    UNDERSCORE = 302,
-    REGEX_HEX = 303,
-    REGEX_ID = 304,
-    REGEX_DECIMAL = 305,
-    REGEX_CHAR = 306,
-    REGEX_STRING = 307
+    TRUE = 293,
+    FALSE = 294,
+    COMMA = 295,
+    SEMICOLON = 296,
+    REGEX_HEX = 297,
+    REGEX_ID = 298,
+    REGEX_DECIMAL = 299,
+    REGEX_CHAR = 300,
+    REGEX_STRING = 301
   };
 #endif
 

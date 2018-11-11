@@ -5,6 +5,11 @@
 # define YY_DECL extern "C" int yylex()
 extern union Node yylval;
 using namespace std;
+
+void yyerror (char const *s) {
+	fprintf (stderr, "%s at statement -> %d\nNot parsed completely\n", s,yylineno);
+}
+
 %}
 
 %%
@@ -46,11 +51,8 @@ using namespace std;
 "||"                        { printf("%s", yytext); yylval.lit = new string(yytext, yyleng); return OROR; }
 "true"                      { printf("%s", yytext); yylval.lit = new string(yytext, yyleng); return TRUE; }
 "false"                     { printf("%s", yytext); yylval.lit = new string(yytext, yyleng); return FALSE; }
-"'"                         { printf("%s", yytext); yylval.lit = new string(yytext, yyleng); return SQUOT; }
-"\""                        { printf("%s", yytext); yylval.lit = new string(yytext, yyleng); return DQUOT; }
 ","                         { printf("%s", yytext); yylval.lit = new string(yytext, yyleng); return COMMA; }
 ";"                         { printf("%s", yytext); yylval.lit = new string(yytext, yyleng); return SEMICOLON; }
-"_"                         { printf("%s", yytext); yylval.lit = new string(yytext, yyleng); return UNDERSCORE; }
 "\t"                        { printf("\t"); }
 "\n"                        { printf("\n"); }
 " "                         { printf(" "); }

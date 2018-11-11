@@ -3,9 +3,8 @@
 
 using namespace std;
 
-class SomeVisitor: public ASTVisitor{
-	public:
-		void visit(class BaseAst& node) {
-			node.accept(*this);
-		}
-};
+SomeVisitor::SomeVisitor() {};
+void SomeVisitor::visit(class Program* node) {
+	cout << "YAY!" << endl;
+	// node->accept(*this);
+}

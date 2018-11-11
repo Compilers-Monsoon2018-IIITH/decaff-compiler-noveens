@@ -9,7 +9,8 @@ extern "C" FILE *yyin;
 extern "C" int line_num;
 extern union Node yylval;
 extern "C" int errors;
-class Prog* start = NULL;
+void yyerror(const char *s);
+class Program* rootAst = NULL;
 int errors=0;
 
 %}
@@ -51,16 +52,10 @@ int errors=0;
 %token <lit> NEQ
 %token <lit> ANDAND
 %token <lit> OROR
-%token <lit> ALPHA
-%token <lit> DIGIT
 %token <lit> TRUE
 %token <lit> FALSE
-%token <lit> SQUOT
-%token <lit> DQUOT
 %token <lit> COMMA
 %token <lit> SEMICOLON
-%token <lit> CHAR
-%token <lit> UNDERSCORE
 %token <num> REGEX_HEX
 %token <lit> REGEX_ID
 %token <num> REGEX_DECIMAL
@@ -103,7 +98,7 @@ int errors=0;
 
 %%
 
-program: CLASS PROG LEFT_CURLY field_decl method_decl RIGHT_CURLY							{ $$ = new Program($4, $5); }
+program: CLASS PROG LEFT_CURLY field_decl method_decl RIGHT_CURLY							{ $$ = new Program($4, $5); rootAst = $$; }
 	;
 
 field_decl: 																				{ $$ = new FieldDeclList(); }
@@ -260,7 +255,8 @@ string_literal: /*DQUOT multichar DQUOT*/ REGEX_STRING 										{ $$ = $1; }
 
 int main(int argc, char **argv) {
 	yyparse();
-}
-void yyerror (char const *s) {
-	fprintf (stderr, "%s at statement -> %d\nNot parsed completely\n", s,yylineno);
+
+	class SomeVisitor *visitor = new SomeVisitor();
+	// rootAst->accept(it);
+	visitor->visit(rootAst);
 }
