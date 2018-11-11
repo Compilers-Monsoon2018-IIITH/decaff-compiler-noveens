@@ -22,21 +22,18 @@ void SomeVisitor::visit(class BinaryOpExpression* node) {
 	cout << "Left Expr: "; node->left->accept(this);
 	cout << ", Op: " << *(node->op);
 	cout << ", Right Expr: "; node->right->accept(this);
-	// cout << endl;
 }
 
 void SomeVisitor::visit(class UnaryOpExpression* node) {
 	cout << "Unary Op Expression: ";
 	cout << "Op: " << *(node->op);
 	cout << ", Expr: "; node->expr->accept(this);
-	// cout << endl;
 }
 
 void SomeVisitor::visit(class MethodCall* node) {
 	cout << "Method call: ";
 	cout << "Method name: "; node->method_name->accept(this); cout << endl;
 	node->args->accept(this);
-	// cout << endl;
 }
 
 void SomeVisitor::visit(class MethodArgInpList* node) {
@@ -54,7 +51,6 @@ void SomeVisitor::visit(class CalloutCall* node) {
 	cout << "Callout Call: ";
 	cout << "function name: " << *(node->function_name);
 	cout << "args: "; node->args->accept(this);
-	// cout << endl; 
 }
 
 void SomeVisitor::visit(class CalloutArgList* node) {
@@ -136,14 +132,12 @@ void SomeVisitor::visit(class ParamList* node) {
 void SomeVisitor::visit(class Block* node) {
 	node->decleration_list->accept(this);
 	node->statement_list->accept(this);
-	// cout << endl;
 }
 void SomeVisitor::visit(class StatementList* node) {
 	int statement_num = 1;
 	for (auto statement: node->statement_list) {
 		cout << green << "Statement #" << statement_num << ":" << def << endl;
 		statement->accept(this);
-		// cout << endl;
 		statement_num++;
 	}
 }
