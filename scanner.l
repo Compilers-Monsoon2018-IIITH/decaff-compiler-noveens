@@ -1,13 +1,15 @@
 %{
 # include "bits/stdc++.h"
 # include "class_definition.h"
+# include "flag_parsed_correct.h"
 # include "parser.tab.h"
 # define YY_DECL extern "C" int yylex()
 extern union Node yylval;
 using namespace std;
 
 void yyerror (char const *s) {
-	fprintf (stderr, "%s at statement -> %d\nNot parsed completely\n", s,yylineno);
+	fl_parsed_correct = false;
+	fprintf (stderr, "\n\nParsing not completed, error!\n\n");
 }
 
 %}
@@ -56,10 +58,11 @@ void yyerror (char const *s) {
 "\t"                        { printf("\t"); }
 "\n"                        { printf("\n"); }
 " "                         { printf(" "); }
+[ "\t"]*"//".*				{ printf("COMMENT: %s", yytext); }
 (0x)[0-9a-fA-F]+            { printf("%s", yytext); yylval.num = strtol(yytext, 0, 16); return REGEX_HEX; }
 [a-zA-Z_][a-zA-Z_0-9]*      { printf("%s", yytext); yylval.lit = new string(yytext, yyleng); return REGEX_ID; }
 [0-9][0-9]*                 { printf("%s", yytext); yylval.num = strtol(yytext, 0, 10);  return REGEX_DECIMAL; }
-^\'[ -~]\'$                 { printf("CHAR %s", yytext); yylval.lit = new string(yytext, yyleng); return REGEX_CHAR; } /* FIX THIS */
-^\"[ -~]*\"$                { printf("STRING_LIT %s", yytext); yylval.lit = new string(yytext, yyleng); return REGEX_STRING; } /* FIX THIS */
+\'[ -~]\'                   { printf("CHAR %s", yytext); yylval.lit = new string(yytext, yyleng); return REGEX_CHAR; } /* FIX THIS */
+\"[ -~]*\"                  { printf("STRING_LIT %s", yytext); yylval.lit = new string(yytext, yyleng); return REGEX_STRING; } /* FIX THIS */
 
 %%

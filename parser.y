@@ -2,7 +2,7 @@
 
 #include <bits/stdc++.h>
 #include "class_definition.h"
-int fl = 0;
+bool fl_parsed_correct = true;
 extern "C" int yylex();
 extern "C" int yyparse();
 extern "C" FILE *yyin;
@@ -256,7 +256,8 @@ string_literal: /*DQUOT multichar DQUOT*/ REGEX_STRING 										{ $$ = $1; }
 int main(int argc, char **argv) {
 	yyparse();
 
-	class SomeVisitor *visitor = new SomeVisitor();
-	// rootAst->accept(it);
-	visitor->visit(rootAst);
+	if (fl_parsed_correct == true) {
+		class SomeVisitor *visitor = new SomeVisitor();
+		visitor->visit(rootAst);
+	}
 }

@@ -58,7 +58,7 @@ void SomeVisitor::visit(class CalloutArgList* node) {
 	for (auto arg: node->arg_list) {
 		cout << "Arg #" << num << ": ";
 		arg->accept(this);
-		cout << endl;
+		// cout << endl;
 		num++;
 	}
 }
@@ -89,7 +89,7 @@ void SomeVisitor::visit(class FieldDeclList* node) {
 }
 
 void SomeVisitor::visit(class VariableList* node) {
-	cout << "Encountered Variable List node: ";
+	cout << "type: " << *(node->decleration_type) << " : ";
 	
 	for (auto normal: node->declarations) {
 		normal->accept(this); cout << ", ";
@@ -114,6 +114,7 @@ void SomeVisitor::visit(class MethodDeclList* node) {
 void SomeVisitor::visit(class MethodDecl* node) {	
 	cout << "Method name: ";
 	node->method_name->accept(this);
+	cout << ", return type: " << *(node->return_type);
 	cout << ", parameter list: ";
 	node->param_list->accept(this);
 	cout << red << "Code block starts:\n" << def;
