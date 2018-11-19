@@ -19,43 +19,29 @@ int errors=0;
 
 %token <lit> PROG
 %token <lit> CLASS
-%token <lit> LEFT_CURLY
-%token <lit> RIGHT_CURLY
-%token <lit> LEFT_SQUARE
-%token <lit> RIGHT_SQUARE
-%token <lit> LEFT_ROUND
-%token <lit> RIGHT_ROUND
-%token <lit> VOID
-%token <lit> INT
-%token <lit> BOOL
+%token <lit> LEFT_CURLY RIGHT_CURLY
+%token <lit> LEFT_SQUARE RIGHT_SQUARE
+%token <lit> LEFT_ROUND RIGHT_ROUND
+%token <lit> VOID INT BOOL
 %token <lit> IF
 %token <lit> ELSE
 %token <lit> FOR
 %token <lit> RET
 %token <lit> BREAK
 %token <lit> CONT
-%token <lit> NOT
-%token <lit> PLUS
-%token <lit> MINUS
-%token <lit> MUL
-%token <lit> DIV
-%token <lit> MOD
-%token <lit> EQ
-%token <lit> MINEQ
-%token <lit> PLUSEQ
 %token <lit> CALLOUT
-%token <lit> GT
-%token <lit> LT
-%token <lit> GE
-%token <lit> LE
-%token <lit> EQEQ
-%token <lit> NEQ
-%token <lit> ANDAND
-%token <lit> OROR
 %token <lit> TRUE
 %token <lit> FALSE
 %token <lit> COMMA
 %token <lit> SEMICOLON
+
+%left <lit> LT GT LE GE
+%left <lit> PLUS MINUS 
+%left <lit> MUL DIV
+%nonassoc <lit> MOD
+%left <lit> ANDAND OROR NOT NEQ EQEQ
+%left <lit> PLUSEQ MINEQ EQ
+
 %token <num> REGEX_HEX
 %token <lit> REGEX_ID
 %token <num> REGEX_DECIMAL
@@ -102,20 +88,20 @@ program: CLASS PROG LEFT_CURLY field_decl method_decl RIGHT_CURLY							{ $$ = n
 	;
 
 field_decl: 																				{ $$ = new FieldDeclList(); }
-	| field_decl field_decls																{ $$->push_back($2); }
+	| field_decl field_decls																{ $$ = $1; $$->push_back($2); }
 	;
 
-field_decls: type follow id SEMICOLON														{ $2->push_back($3); $2->set_type($1); $$ = $2; }
-	| type follow id LEFT_SQUARE int_literal RIGHT_SQUARE SEMICOLON							{ $2->push_back(new ArrayTerminalVariable($3, $5)); $2->set_type($1); $$ = $2; }
+field_decls: type id follow SEMICOLON														{ $3->push_back($2); $3->set_type($1); $$ = $3; }
+	| type id LEFT_SQUARE int_literal RIGHT_SQUARE follow SEMICOLON							{ $6->push_back(new ArrayTerminalVariable($2, $4)); $6->set_type($1); $$ = $6; }
 	;
 
 follow:																						{ $$ = new VariableList(); }
-	| follow id COMMA																		{ $$->push_back($2); }
-	| follow id LEFT_SQUARE int_literal RIGHT_SQUARE COMMA									{ $$->push_back(new ArrayTerminalVariable($2, int($4))); }
+	| COMMA id follow																		{ $$ = $3; $$->push_back($2); }
+	| COMMA id LEFT_SQUARE int_literal RIGHT_SQUARE follow									{ $$ = $6; $$->push_back(new ArrayTerminalVariable($2, int($4))); }
 	;
 
 method_decl: 																				{ $$ = new MethodDeclList(); }
-	| method_decl method_decls																{ $$->push_back($2); }
+	| method_decls method_decl																{ $$ = $2; $$->push_back($1); }
 	;
 
 method_decls: type id LEFT_ROUND RIGHT_ROUND block											{ $$ = new MethodDecl($1, $2, $5); }

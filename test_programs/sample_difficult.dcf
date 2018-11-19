@@ -4,7 +4,7 @@ class Program {
       int k,x;
       boolean c;
       
-      void justgone(int x) {
+      int justgone(int x) {
             int x,y;
             boolean dsadsadsa;
 
