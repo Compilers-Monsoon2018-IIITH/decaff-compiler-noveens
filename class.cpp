@@ -96,16 +96,30 @@ void ParamList::push_back(string *type, class TerminalVariable* var) {
 // Class-15
 Block::Block(class FieldDeclList* _decleration_list, class StatementList* _statement_list) 
 : decleration_list(_decleration_list), statement_list(_statement_list) {};
+bool Block::has_return() {
+    return statement_list->has_return();
+}
 
 // Class-16
 StatementList::StatementList() {};
 void StatementList::push_back(class Statement* stat) {
 	statement_list.push_back(stat);
 }
+bool StatementList::has_return() {
+    for (auto statement: statement_list) {
+    	if (dynamic_cast<class StringRetBrkContStatement*> (statement) != nullptr) {
+            return true;
+        }
+        if (dynamic_cast<class RetExpr*> (statement) != nullptr) {
+        	return true;
+        }
+    }
+    return false;
+}
 
 // Class-17
 AssignStmt::AssignStmt(class Location* _left, string *_op, class Expr* _right) 
-: left(_left), op(_op), right(_right) {};
+: left_part(_left), op(_op), right_part(_right) {};
 
 // Class-18
 IfElseStmt::IfElseStmt(class Expr* _cond, class Block* _if_block, class Block* _else_block)
@@ -117,9 +131,9 @@ IfStmt::IfStmt(class Expr* _cond, class Block* _if_block)
 
 // Class-20
 ForStmt::ForStmt(class TerminalVariable* _loop_var, class Expr* _start_cond, class Expr* _right_cond, class Block* _code_block)
-: loop_var(_loop_var), start_cond(_start_cond), right_cond(_right_cond), code_block(_code_block) { var_type = "variable"; };
-ForStmt::ForStmt(class ArrayTerminalVariable* _loop_var, class Expr* _start_cond, class Expr* _right_cond, class Block* _code_block)
-: loop_var_arr(_loop_var), start_cond(_start_cond), right_cond(_right_cond), code_block(_code_block) { var_type = "arr"; };
+: loop_var(_loop_var), start_cond(_start_cond), right_cond(_right_cond), code_block(_code_block) {};
+// ForStmt::ForStmt(class ArrayTerminalVariable* _loop_var, class Expr* _start_cond, class Expr* _right_cond, class Block* _code_block)
+// : loop_var_arr(_loop_var), start_cond(_start_cond), right_cond(_right_cond), code_block(_code_block) { var_type = "arr"; };
 
 // Class-21
 RetExpr::RetExpr(class Expr* _expr)
@@ -137,4 +151,14 @@ Program::Program(class FieldDeclList* _field_decl, class MethodDeclList* _method
 Literal::Literal(int _lit_int)
 : lit_int(_lit_int) { literal_type = "int"; };
 Literal::Literal(string *_lit_string)
-: lit_string(_lit_string) { literal_type = "string"; };
+: lit_string(_lit_string) { 
+	literal_type = "string";
+	if (*(_lit_string) == "true") {
+		literal_type = "boolean";
+		this->lit_bool = true;
+	}
+	else if (*(_lit_string) == "false") {
+		literal_type = "boolean";
+		this->lit_bool = false;
+	}  
+};

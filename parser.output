@@ -1,4 +1,7 @@
+State 136 conflicts: 13 shift/reduce
 State 137 conflicts: 13 shift/reduce
+State 138 conflicts: 13 shift/reduce
+State 139 conflicts: 13 shift/reduce
 
 
 Grammar
@@ -79,51 +82,49 @@ Grammar
    52     | method_call
    53     | callout_call
    54     | literal
-   55     | expr bin_op expr
-   56     | MINUS expr
-   57     | NOT expr
-   58     | LEFT_ROUND expr RIGHT_ROUND
+   55     | expr arith_op expr
+   56     | expr rel_op expr
+   57     | expr eq_op expr
+   58     | expr cond_op expr
+   59     | MINUS expr
+   60     | NOT expr
+   61     | LEFT_ROUND expr RIGHT_ROUND
 
-   59 callout_arg: expr
-   60            | string_literal
+   62 callout_arg: expr
+   63            | string_literal
 
-   61 bin_op: arith_op
-   62       | rel_op
-   63       | eq_op
-   64       | cond_op
+   64 arith_op: PLUS
+   65         | MINUS
+   66         | MUL
+   67         | DIV
+   68         | MOD
 
-   65 arith_op: PLUS
-   66         | MINUS
-   67         | MUL
-   68         | DIV
-   69         | MOD
+   69 rel_op: GT
+   70       | LT
+   71       | GE
+   72       | LE
 
-   70 rel_op: GT
-   71       | LT
-   72       | GE
-   73       | LE
+   73 eq_op: EQEQ
+   74      | NEQ
 
-   74 eq_op: EQEQ
-   75      | NEQ
+   75 cond_op: ANDAND
+   76        | OROR
 
-   76 cond_op: ANDAND
-   77        | OROR
+   77 literal: int_literal
+   78        | char_literal
+   79        | bool_literal
 
-   78 literal: int_literal
-   79        | char_literal
-   80        | bool_literal
+   80 id: REGEX_ID
 
-   81 id: REGEX_ID
+   81 int_literal: REGEX_DECIMAL
+   82            | REGEX_HEX
 
-   82 int_literal: REGEX_DECIMAL
-   83            | REGEX_HEX
+   83 bool_literal: TRUE
+   84             | FALSE
 
-   84 bool_literal: TRUE
-   85             | FALSE
+   85 char_literal: REGEX_CHAR
 
-   86 char_literal: REGEX_CHAR
-
-   87 string_literal: REGEX_STRING
+   86 string_literal: REGEX_STRING
 
 
 Terminals, with rules where they appear
@@ -136,8 +137,8 @@ LEFT_CURLY (260) 1 17
 RIGHT_CURLY (261) 1 17
 LEFT_SQUARE (262) 5 8 50
 RIGHT_SQUARE (263) 5 8 50
-LEFT_ROUND (264) 11 12 13 14 29 30 40 41 42 43 58
-RIGHT_ROUND (265) 11 12 13 14 29 30 40 41 42 43 58
+LEFT_ROUND (264) 11 12 13 14 29 30 40 41 42 43 61
+RIGHT_ROUND (265) 11 12 13 14 29 30 40 41 42 43 61
 VOID (266) 13 14
 INT (267) 24
 BOOL (268) 25
@@ -148,32 +149,32 @@ RET (272) 32 33
 BREAK (273) 34
 CONT (274) 35
 CALLOUT (275) 42 43
-TRUE (276) 84
-FALSE (277) 85
+TRUE (276) 83
+FALSE (277) 84
 COMMA (278) 7 8 16 21 31 43 45 47
 SEMICOLON (279) 4 5 19 26 27 28 32 33 34 35
-LT (280) 71
-GT (281) 70
-LE (282) 73
-GE (283) 72
-PLUS (284) 65
-MINUS (285) 56 66
-MUL (286) 67
-DIV (287) 68
-MOD (288) 69
-ANDAND (289) 76
-OROR (290) 77
-NOT (291) 57
-NEQ (292) 75
-EQEQ (293) 74
-PLUSEQ (294) 39
-MINEQ (295) 38
-EQ (296) 31 37
-REGEX_HEX (297) 83
-REGEX_ID (298) 81
-REGEX_DECIMAL (299) 82
-REGEX_CHAR (300) 86
-REGEX_STRING (301) 87
+REGEX_HEX (280) 82
+REGEX_ID (281) 80
+REGEX_DECIMAL (282) 81
+REGEX_CHAR (283) 85
+REGEX_STRING (284) 86
+NEQ (285) 74
+LE (286) 72
+GE (287) 71
+LT (288) 70
+GT (289) 69
+OROR (290) 76
+ANDAND (291) 75
+PLUS (292) 64
+MINUS (293) 59 65
+MUL (294) 66
+DIV (295) 67
+MOD (296) 68
+NOT (297) 60
+EQEQ (298) 73
+EQ (299) 31 37
+PLUSEQ (300) 39
+MINEQ (301) 38
 
 
 Nonterminals, with rules where they appear
@@ -221,32 +222,30 @@ method_name (66)
 location (67)
     on left: 49 50, on right: 26 51
 expr (68)
-    on left: 51 52 53 54 55 56 57 58, on right: 26 29 30 31 32 41 45
-    50 55 56 57 58 59
+    on left: 51 52 53 54 55 56 57 58 59 60 61, on right: 26 29 30 31
+    32 41 45 50 55 56 57 58 59 60 61 62
 callout_arg (69)
-    on left: 59 60, on right: 43 47
-bin_op (70)
-    on left: 61 62 63 64, on right: 55
-arith_op (71)
-    on left: 65 66 67 68 69, on right: 61
-rel_op (72)
-    on left: 70 71 72 73, on right: 62
-eq_op (73)
-    on left: 74 75, on right: 63
-cond_op (74)
-    on left: 76 77, on right: 64
-literal (75)
-    on left: 78 79 80, on right: 54
-id (76)
-    on left: 81, on right: 4 5 7 8 11 12 13 14 16 19 21 31 48 49 50
-int_literal (77)
-    on left: 82 83, on right: 5 8 78
-bool_literal (78)
-    on left: 84 85, on right: 80
-char_literal (79)
-    on left: 86, on right: 79
-string_literal (80)
-    on left: 87, on right: 42 43 60
+    on left: 62 63, on right: 43 47
+arith_op (70)
+    on left: 64 65 66 67 68, on right: 55
+rel_op (71)
+    on left: 69 70 71 72, on right: 56
+eq_op (72)
+    on left: 73 74, on right: 57
+cond_op (73)
+    on left: 75 76, on right: 58
+literal (74)
+    on left: 77 78 79, on right: 54
+id (75)
+    on left: 80, on right: 4 5 7 8 11 12 13 14 16 19 21 31 48 49 50
+int_literal (76)
+    on left: 81 82, on right: 5 8 77
+bool_literal (77)
+    on left: 83 84, on right: 79
+char_literal (78)
+    on left: 85, on right: 78
+string_literal (79)
+    on left: 86, on right: 42 43 63
 
 
 State 0
@@ -379,9 +378,9 @@ State 13
 
 State 14
 
-   81 id: REGEX_ID .
+   80 id: REGEX_ID .
 
-    $default  reduce using rule 81 (id)
+    $default  reduce using rule 80 (id)
 
 
 State 15
@@ -513,16 +512,16 @@ State 27
 
 State 28
 
-   83 int_literal: REGEX_HEX .
+   82 int_literal: REGEX_HEX .
 
-    $default  reduce using rule 83 (int_literal)
+    $default  reduce using rule 82 (int_literal)
 
 
 State 29
 
-   82 int_literal: REGEX_DECIMAL .
+   81 int_literal: REGEX_DECIMAL .
 
-    $default  reduce using rule 82 (int_literal)
+    $default  reduce using rule 81 (int_literal)
 
 
 State 30
@@ -799,12 +798,12 @@ State 58
     TRUE           shift, and go to state 76
     FALSE          shift, and go to state 77
     SEMICOLON      shift, and go to state 78
-    MINUS          shift, and go to state 79
-    NOT            shift, and go to state 80
     REGEX_HEX      shift, and go to state 28
     REGEX_ID       shift, and go to state 14
     REGEX_DECIMAL  shift, and go to state 29
-    REGEX_CHAR     shift, and go to state 81
+    REGEX_CHAR     shift, and go to state 79
+    MINUS          shift, and go to state 80
+    NOT            shift, and go to state 81
 
     method_call   go to state 82
     callout_call  go to state 83
@@ -880,9 +879,9 @@ State 67
 
    26 statement: location . assign_op expr SEMICOLON
 
-    PLUSEQ  shift, and go to state 96
-    MINEQ   shift, and go to state 97
-    EQ      shift, and go to state 98
+    EQ      shift, and go to state 96
+    PLUSEQ  shift, and go to state 97
+    MINEQ   shift, and go to state 98
 
     assign_op  go to state 99
 
@@ -939,12 +938,12 @@ State 73
     CALLOUT        shift, and go to state 61
     TRUE           shift, and go to state 76
     FALSE          shift, and go to state 77
-    MINUS          shift, and go to state 79
-    NOT            shift, and go to state 80
     REGEX_HEX      shift, and go to state 28
     REGEX_ID       shift, and go to state 14
     REGEX_DECIMAL  shift, and go to state 29
-    REGEX_CHAR     shift, and go to state 81
+    REGEX_CHAR     shift, and go to state 79
+    MINUS          shift, and go to state 80
+    NOT            shift, and go to state 81
 
     method_call   go to state 82
     callout_call  go to state 83
@@ -967,18 +966,18 @@ State 74
 
 State 75
 
-   58 expr: LEFT_ROUND . expr RIGHT_ROUND
+   61 expr: LEFT_ROUND . expr RIGHT_ROUND
 
     LEFT_ROUND     shift, and go to state 75
     CALLOUT        shift, and go to state 61
     TRUE           shift, and go to state 76
     FALSE          shift, and go to state 77
-    MINUS          shift, and go to state 79
-    NOT            shift, and go to state 80
     REGEX_HEX      shift, and go to state 28
     REGEX_ID       shift, and go to state 14
     REGEX_DECIMAL  shift, and go to state 29
-    REGEX_CHAR     shift, and go to state 81
+    REGEX_CHAR     shift, and go to state 79
+    MINUS          shift, and go to state 80
+    NOT            shift, and go to state 81
 
     method_call   go to state 82
     callout_call  go to state 83
@@ -994,16 +993,16 @@ State 75
 
 State 76
 
-   84 bool_literal: TRUE .
+   83 bool_literal: TRUE .
 
-    $default  reduce using rule 84 (bool_literal)
+    $default  reduce using rule 83 (bool_literal)
 
 
 State 77
 
-   85 bool_literal: FALSE .
+   84 bool_literal: FALSE .
 
-    $default  reduce using rule 85 (bool_literal)
+    $default  reduce using rule 84 (bool_literal)
 
 
 State 78
@@ -1015,18 +1014,25 @@ State 78
 
 State 79
 
-   56 expr: MINUS . expr
+   85 char_literal: REGEX_CHAR .
+
+    $default  reduce using rule 85 (char_literal)
+
+
+State 80
+
+   59 expr: MINUS . expr
 
     LEFT_ROUND     shift, and go to state 75
     CALLOUT        shift, and go to state 61
     TRUE           shift, and go to state 76
     FALSE          shift, and go to state 77
-    MINUS          shift, and go to state 79
-    NOT            shift, and go to state 80
     REGEX_HEX      shift, and go to state 28
     REGEX_ID       shift, and go to state 14
     REGEX_DECIMAL  shift, and go to state 29
-    REGEX_CHAR     shift, and go to state 81
+    REGEX_CHAR     shift, and go to state 79
+    MINUS          shift, and go to state 80
+    NOT            shift, and go to state 81
 
     method_call   go to state 82
     callout_call  go to state 83
@@ -1040,20 +1046,20 @@ State 79
     char_literal  go to state 89
 
 
-State 80
+State 81
 
-   57 expr: NOT . expr
+   60 expr: NOT . expr
 
     LEFT_ROUND     shift, and go to state 75
     CALLOUT        shift, and go to state 61
     TRUE           shift, and go to state 76
     FALSE          shift, and go to state 77
-    MINUS          shift, and go to state 79
-    NOT            shift, and go to state 80
     REGEX_HEX      shift, and go to state 28
     REGEX_ID       shift, and go to state 14
     REGEX_DECIMAL  shift, and go to state 29
-    REGEX_CHAR     shift, and go to state 81
+    REGEX_CHAR     shift, and go to state 79
+    MINUS          shift, and go to state 80
+    NOT            shift, and go to state 81
 
     method_call   go to state 82
     callout_call  go to state 83
@@ -1065,13 +1071,6 @@ State 80
     int_literal   go to state 87
     bool_literal  go to state 88
     char_literal  go to state 89
-
-
-State 81
-
-   86 char_literal: REGEX_CHAR .
-
-    $default  reduce using rule 86 (char_literal)
 
 
 State 82
@@ -1098,28 +1097,30 @@ State 84
 State 85
 
    32 statement: RET expr . SEMICOLON
-   55 expr: expr . bin_op expr
+   55 expr: expr . arith_op expr
+   56     | expr . rel_op expr
+   57     | expr . eq_op expr
+   58     | expr . cond_op expr
 
     SEMICOLON  shift, and go to state 107
-    LT         shift, and go to state 108
-    GT         shift, and go to state 109
-    LE         shift, and go to state 110
-    GE         shift, and go to state 111
-    PLUS       shift, and go to state 112
-    MINUS      shift, and go to state 113
-    MUL        shift, and go to state 114
-    DIV        shift, and go to state 115
-    MOD        shift, and go to state 116
-    ANDAND     shift, and go to state 117
-    OROR       shift, and go to state 118
-    NEQ        shift, and go to state 119
+    NEQ        shift, and go to state 108
+    LE         shift, and go to state 109
+    GE         shift, and go to state 110
+    LT         shift, and go to state 111
+    GT         shift, and go to state 112
+    OROR       shift, and go to state 113
+    ANDAND     shift, and go to state 114
+    PLUS       shift, and go to state 115
+    MINUS      shift, and go to state 116
+    MUL        shift, and go to state 117
+    DIV        shift, and go to state 118
+    MOD        shift, and go to state 119
     EQEQ       shift, and go to state 120
 
-    bin_op    go to state 121
-    arith_op  go to state 122
-    rel_op    go to state 123
-    eq_op     go to state 124
-    cond_op   go to state 125
+    arith_op  go to state 121
+    rel_op    go to state 122
+    eq_op     go to state 123
+    cond_op   go to state 124
 
 
 State 86
@@ -1131,23 +1132,23 @@ State 86
 
 State 87
 
-   78 literal: int_literal .
+   77 literal: int_literal .
 
-    $default  reduce using rule 78 (literal)
+    $default  reduce using rule 77 (literal)
 
 
 State 88
 
-   80 literal: bool_literal .
+   79 literal: bool_literal .
 
-    $default  reduce using rule 80 (literal)
+    $default  reduce using rule 79 (literal)
 
 
 State 89
 
-   79 literal: char_literal .
+   78 literal: char_literal .
 
-    $default  reduce using rule 79 (literal)
+    $default  reduce using rule 78 (literal)
 
 
 State 90
@@ -1169,9 +1170,9 @@ State 92
    42 callout_call: CALLOUT LEFT_ROUND . string_literal RIGHT_ROUND
    43             | CALLOUT LEFT_ROUND . string_literal COMMA multi_callout_arg callout_arg RIGHT_ROUND
 
-    REGEX_STRING  shift, and go to state 126
+    REGEX_STRING  shift, and go to state 125
 
-    string_literal  go to state 127
+    string_literal  go to state 126
 
 
 State 93
@@ -1193,32 +1194,32 @@ State 95
    40 method_call: method_name LEFT_ROUND . RIGHT_ROUND
    41            | method_name LEFT_ROUND . multi_expr expr RIGHT_ROUND
 
-    RIGHT_ROUND  shift, and go to state 128
+    RIGHT_ROUND  shift, and go to state 127
 
     $default  reduce using rule 44 (multi_expr)
 
-    multi_expr  go to state 129
+    multi_expr  go to state 128
 
 
 State 96
+
+   37 assign_op: EQ .
+
+    $default  reduce using rule 37 (assign_op)
+
+
+State 97
 
    39 assign_op: PLUSEQ .
 
     $default  reduce using rule 39 (assign_op)
 
 
-State 97
+State 98
 
    38 assign_op: MINEQ .
 
     $default  reduce using rule 38 (assign_op)
-
-
-State 98
-
-   37 assign_op: EQ .
-
-    $default  reduce using rule 37 (assign_op)
 
 
 State 99
@@ -1229,18 +1230,18 @@ State 99
     CALLOUT        shift, and go to state 61
     TRUE           shift, and go to state 76
     FALSE          shift, and go to state 77
-    MINUS          shift, and go to state 79
-    NOT            shift, and go to state 80
     REGEX_HEX      shift, and go to state 28
     REGEX_ID       shift, and go to state 14
     REGEX_DECIMAL  shift, and go to state 29
-    REGEX_CHAR     shift, and go to state 81
+    REGEX_CHAR     shift, and go to state 79
+    MINUS          shift, and go to state 80
+    NOT            shift, and go to state 81
 
     method_call   go to state 82
     callout_call  go to state 83
     method_name   go to state 66
     location      go to state 84
-    expr          go to state 130
+    expr          go to state 129
     literal       go to state 86
     id            go to state 68
     int_literal   go to state 87
@@ -1256,18 +1257,18 @@ State 100
     CALLOUT        shift, and go to state 61
     TRUE           shift, and go to state 76
     FALSE          shift, and go to state 77
-    MINUS          shift, and go to state 79
-    NOT            shift, and go to state 80
     REGEX_HEX      shift, and go to state 28
     REGEX_ID       shift, and go to state 14
     REGEX_DECIMAL  shift, and go to state 29
-    REGEX_CHAR     shift, and go to state 81
+    REGEX_CHAR     shift, and go to state 79
+    MINUS          shift, and go to state 80
+    NOT            shift, and go to state 81
 
     method_call   go to state 82
     callout_call  go to state 83
     method_name   go to state 66
     location      go to state 84
-    expr          go to state 131
+    expr          go to state 130
     literal       go to state 86
     id            go to state 68
     int_literal   go to state 87
@@ -1280,36 +1281,38 @@ State 101
    19 multi_var_decl: multi_var_decl type multi_id id . SEMICOLON
    21 multi_id: multi_id id . COMMA
 
-    COMMA      shift, and go to state 132
-    SEMICOLON  shift, and go to state 133
+    COMMA      shift, and go to state 131
+    SEMICOLON  shift, and go to state 132
 
 
 State 102
 
    29 statement: IF LEFT_ROUND expr . RIGHT_ROUND block ELSE block
    30          | IF LEFT_ROUND expr . RIGHT_ROUND block
-   55 expr: expr . bin_op expr
+   55 expr: expr . arith_op expr
+   56     | expr . rel_op expr
+   57     | expr . eq_op expr
+   58     | expr . cond_op expr
 
-    RIGHT_ROUND  shift, and go to state 134
-    LT           shift, and go to state 108
-    GT           shift, and go to state 109
-    LE           shift, and go to state 110
-    GE           shift, and go to state 111
-    PLUS         shift, and go to state 112
-    MINUS        shift, and go to state 113
-    MUL          shift, and go to state 114
-    DIV          shift, and go to state 115
-    MOD          shift, and go to state 116
-    ANDAND       shift, and go to state 117
-    OROR         shift, and go to state 118
-    NEQ          shift, and go to state 119
+    RIGHT_ROUND  shift, and go to state 133
+    NEQ          shift, and go to state 108
+    LE           shift, and go to state 109
+    GE           shift, and go to state 110
+    LT           shift, and go to state 111
+    GT           shift, and go to state 112
+    OROR         shift, and go to state 113
+    ANDAND       shift, and go to state 114
+    PLUS         shift, and go to state 115
+    MINUS        shift, and go to state 116
+    MUL          shift, and go to state 117
+    DIV          shift, and go to state 118
+    MOD          shift, and go to state 119
     EQEQ         shift, and go to state 120
 
-    bin_op    go to state 121
-    arith_op  go to state 122
-    rel_op    go to state 123
-    eq_op     go to state 124
-    cond_op   go to state 125
+    arith_op  go to state 121
+    rel_op    go to state 122
+    eq_op     go to state 123
+    cond_op   go to state 124
 
 
 State 103
@@ -1320,18 +1323,18 @@ State 103
     CALLOUT        shift, and go to state 61
     TRUE           shift, and go to state 76
     FALSE          shift, and go to state 77
-    MINUS          shift, and go to state 79
-    NOT            shift, and go to state 80
     REGEX_HEX      shift, and go to state 28
     REGEX_ID       shift, and go to state 14
     REGEX_DECIMAL  shift, and go to state 29
-    REGEX_CHAR     shift, and go to state 81
+    REGEX_CHAR     shift, and go to state 79
+    MINUS          shift, and go to state 80
+    NOT            shift, and go to state 81
 
     method_call   go to state 82
     callout_call  go to state 83
     method_name   go to state 66
     location      go to state 84
-    expr          go to state 135
+    expr          go to state 134
     literal       go to state 86
     id            go to state 68
     int_literal   go to state 87
@@ -1341,65 +1344,70 @@ State 103
 
 State 104
 
-   55 expr: expr . bin_op expr
-   58     | LEFT_ROUND expr . RIGHT_ROUND
+   55 expr: expr . arith_op expr
+   56     | expr . rel_op expr
+   57     | expr . eq_op expr
+   58     | expr . cond_op expr
+   61     | LEFT_ROUND expr . RIGHT_ROUND
 
-    RIGHT_ROUND  shift, and go to state 136
-    LT           shift, and go to state 108
-    GT           shift, and go to state 109
-    LE           shift, and go to state 110
-    GE           shift, and go to state 111
-    PLUS         shift, and go to state 112
-    MINUS        shift, and go to state 113
-    MUL          shift, and go to state 114
-    DIV          shift, and go to state 115
-    MOD          shift, and go to state 116
-    ANDAND       shift, and go to state 117
-    OROR         shift, and go to state 118
-    NEQ          shift, and go to state 119
+    RIGHT_ROUND  shift, and go to state 135
+    NEQ          shift, and go to state 108
+    LE           shift, and go to state 109
+    GE           shift, and go to state 110
+    LT           shift, and go to state 111
+    GT           shift, and go to state 112
+    OROR         shift, and go to state 113
+    ANDAND       shift, and go to state 114
+    PLUS         shift, and go to state 115
+    MINUS        shift, and go to state 116
+    MUL          shift, and go to state 117
+    DIV          shift, and go to state 118
+    MOD          shift, and go to state 119
     EQEQ         shift, and go to state 120
 
-    bin_op    go to state 121
-    arith_op  go to state 122
-    rel_op    go to state 123
-    eq_op     go to state 124
-    cond_op   go to state 125
+    arith_op  go to state 121
+    rel_op    go to state 122
+    eq_op     go to state 123
+    cond_op   go to state 124
 
 
 State 105
 
-   55 expr: expr . bin_op expr
-   56     | MINUS expr .
+   55 expr: expr . arith_op expr
+   56     | expr . rel_op expr
+   57     | expr . eq_op expr
+   58     | expr . cond_op expr
+   59     | MINUS expr .
 
-    MUL     shift, and go to state 114
-    DIV     shift, and go to state 115
-    MOD     shift, and go to state 116
-    ANDAND  shift, and go to state 117
-    OROR    shift, and go to state 118
-    NEQ     shift, and go to state 119
-    EQEQ    shift, and go to state 120
+    MUL   shift, and go to state 117
+    DIV   shift, and go to state 118
+    MOD   shift, and go to state 119
+    EQEQ  shift, and go to state 120
 
-    $default  reduce using rule 56 (expr)
+    $default  reduce using rule 59 (expr)
 
-    bin_op    go to state 121
-    arith_op  go to state 122
-    rel_op    go to state 123
-    eq_op     go to state 124
-    cond_op   go to state 125
+    arith_op  go to state 121
+    rel_op    go to state 122
+    eq_op     go to state 123
+    cond_op   go to state 124
 
 
 State 106
 
-   55 expr: expr . bin_op expr
-   57     | NOT expr .
+   55 expr: expr . arith_op expr
+   56     | expr . rel_op expr
+   57     | expr . eq_op expr
+   58     | expr . cond_op expr
+   60     | NOT expr .
 
-    $default  reduce using rule 57 (expr)
+    EQEQ  shift, and go to state 120
 
-    bin_op    go to state 121
-    arith_op  go to state 122
-    rel_op    go to state 123
-    eq_op     go to state 124
-    cond_op   go to state 125
+    $default  reduce using rule 60 (expr)
+
+    arith_op  go to state 121
+    rel_op    go to state 122
+    eq_op     go to state 123
+    cond_op   go to state 124
 
 
 State 107
@@ -1411,109 +1419,136 @@ State 107
 
 State 108
 
-   71 rel_op: LT .
-
-    $default  reduce using rule 71 (rel_op)
-
-
-State 109
-
-   70 rel_op: GT .
-
-    $default  reduce using rule 70 (rel_op)
-
-
-State 110
-
-   73 rel_op: LE .
-
-    $default  reduce using rule 73 (rel_op)
-
-
-State 111
-
-   72 rel_op: GE .
-
-    $default  reduce using rule 72 (rel_op)
-
-
-State 112
-
-   65 arith_op: PLUS .
-
-    $default  reduce using rule 65 (arith_op)
-
-
-State 113
-
-   66 arith_op: MINUS .
-
-    $default  reduce using rule 66 (arith_op)
-
-
-State 114
-
-   67 arith_op: MUL .
-
-    $default  reduce using rule 67 (arith_op)
-
-
-State 115
-
-   68 arith_op: DIV .
-
-    $default  reduce using rule 68 (arith_op)
-
-
-State 116
-
-   69 arith_op: MOD .
-
-    $default  reduce using rule 69 (arith_op)
-
-
-State 117
-
-   76 cond_op: ANDAND .
-
-    $default  reduce using rule 76 (cond_op)
-
-
-State 118
-
-   77 cond_op: OROR .
-
-    $default  reduce using rule 77 (cond_op)
-
-
-State 119
-
-   75 eq_op: NEQ .
-
-    $default  reduce using rule 75 (eq_op)
-
-
-State 120
-
-   74 eq_op: EQEQ .
+   74 eq_op: NEQ .
 
     $default  reduce using rule 74 (eq_op)
 
 
+State 109
+
+   72 rel_op: LE .
+
+    $default  reduce using rule 72 (rel_op)
+
+
+State 110
+
+   71 rel_op: GE .
+
+    $default  reduce using rule 71 (rel_op)
+
+
+State 111
+
+   70 rel_op: LT .
+
+    $default  reduce using rule 70 (rel_op)
+
+
+State 112
+
+   69 rel_op: GT .
+
+    $default  reduce using rule 69 (rel_op)
+
+
+State 113
+
+   76 cond_op: OROR .
+
+    $default  reduce using rule 76 (cond_op)
+
+
+State 114
+
+   75 cond_op: ANDAND .
+
+    $default  reduce using rule 75 (cond_op)
+
+
+State 115
+
+   64 arith_op: PLUS .
+
+    $default  reduce using rule 64 (arith_op)
+
+
+State 116
+
+   65 arith_op: MINUS .
+
+    $default  reduce using rule 65 (arith_op)
+
+
+State 117
+
+   66 arith_op: MUL .
+
+    $default  reduce using rule 66 (arith_op)
+
+
+State 118
+
+   67 arith_op: DIV .
+
+    $default  reduce using rule 67 (arith_op)
+
+
+State 119
+
+   68 arith_op: MOD .
+
+    $default  reduce using rule 68 (arith_op)
+
+
+State 120
+
+   73 eq_op: EQEQ .
+
+    $default  reduce using rule 73 (eq_op)
+
+
 State 121
 
-   55 expr: expr bin_op . expr
+   55 expr: expr arith_op . expr
 
     LEFT_ROUND     shift, and go to state 75
     CALLOUT        shift, and go to state 61
     TRUE           shift, and go to state 76
     FALSE          shift, and go to state 77
-    MINUS          shift, and go to state 79
-    NOT            shift, and go to state 80
     REGEX_HEX      shift, and go to state 28
     REGEX_ID       shift, and go to state 14
     REGEX_DECIMAL  shift, and go to state 29
-    REGEX_CHAR     shift, and go to state 81
+    REGEX_CHAR     shift, and go to state 79
+    MINUS          shift, and go to state 80
+    NOT            shift, and go to state 81
+
+    method_call   go to state 82
+    callout_call  go to state 83
+    method_name   go to state 66
+    location      go to state 84
+    expr          go to state 136
+    literal       go to state 86
+    id            go to state 68
+    int_literal   go to state 87
+    bool_literal  go to state 88
+    char_literal  go to state 89
+
+
+State 122
+
+   56 expr: expr rel_op . expr
+
+    LEFT_ROUND     shift, and go to state 75
+    CALLOUT        shift, and go to state 61
+    TRUE           shift, and go to state 76
+    FALSE          shift, and go to state 77
+    REGEX_HEX      shift, and go to state 28
+    REGEX_ID       shift, and go to state 14
+    REGEX_DECIMAL  shift, and go to state 29
+    REGEX_CHAR     shift, and go to state 79
+    MINUS          shift, and go to state 80
+    NOT            shift, and go to state 81
 
     method_call   go to state 82
     callout_call  go to state 83
@@ -1527,58 +1562,84 @@ State 121
     char_literal  go to state 89
 
 
-State 122
-
-   61 bin_op: arith_op .
-
-    $default  reduce using rule 61 (bin_op)
-
-
 State 123
 
-   62 bin_op: rel_op .
+   57 expr: expr eq_op . expr
 
-    $default  reduce using rule 62 (bin_op)
+    LEFT_ROUND     shift, and go to state 75
+    CALLOUT        shift, and go to state 61
+    TRUE           shift, and go to state 76
+    FALSE          shift, and go to state 77
+    REGEX_HEX      shift, and go to state 28
+    REGEX_ID       shift, and go to state 14
+    REGEX_DECIMAL  shift, and go to state 29
+    REGEX_CHAR     shift, and go to state 79
+    MINUS          shift, and go to state 80
+    NOT            shift, and go to state 81
+
+    method_call   go to state 82
+    callout_call  go to state 83
+    method_name   go to state 66
+    location      go to state 84
+    expr          go to state 138
+    literal       go to state 86
+    id            go to state 68
+    int_literal   go to state 87
+    bool_literal  go to state 88
+    char_literal  go to state 89
 
 
 State 124
 
-   63 bin_op: eq_op .
+   58 expr: expr cond_op . expr
 
-    $default  reduce using rule 63 (bin_op)
+    LEFT_ROUND     shift, and go to state 75
+    CALLOUT        shift, and go to state 61
+    TRUE           shift, and go to state 76
+    FALSE          shift, and go to state 77
+    REGEX_HEX      shift, and go to state 28
+    REGEX_ID       shift, and go to state 14
+    REGEX_DECIMAL  shift, and go to state 29
+    REGEX_CHAR     shift, and go to state 79
+    MINUS          shift, and go to state 80
+    NOT            shift, and go to state 81
+
+    method_call   go to state 82
+    callout_call  go to state 83
+    method_name   go to state 66
+    location      go to state 84
+    expr          go to state 139
+    literal       go to state 86
+    id            go to state 68
+    int_literal   go to state 87
+    bool_literal  go to state 88
+    char_literal  go to state 89
 
 
 State 125
 
-   64 bin_op: cond_op .
+   86 string_literal: REGEX_STRING .
 
-    $default  reduce using rule 64 (bin_op)
+    $default  reduce using rule 86 (string_literal)
 
 
 State 126
 
-   87 string_literal: REGEX_STRING .
-
-    $default  reduce using rule 87 (string_literal)
-
-
-State 127
-
    42 callout_call: CALLOUT LEFT_ROUND string_literal . RIGHT_ROUND
    43             | CALLOUT LEFT_ROUND string_literal . COMMA multi_callout_arg callout_arg RIGHT_ROUND
 
-    RIGHT_ROUND  shift, and go to state 138
-    COMMA        shift, and go to state 139
+    RIGHT_ROUND  shift, and go to state 140
+    COMMA        shift, and go to state 141
 
 
-State 128
+State 127
 
    40 method_call: method_name LEFT_ROUND RIGHT_ROUND .
 
     $default  reduce using rule 40 (method_call)
 
 
-State 129
+State 128
 
    41 method_call: method_name LEFT_ROUND multi_expr . expr RIGHT_ROUND
    45 multi_expr: multi_expr . expr COMMA
@@ -1587,18 +1648,18 @@ State 129
     CALLOUT        shift, and go to state 61
     TRUE           shift, and go to state 76
     FALSE          shift, and go to state 77
-    MINUS          shift, and go to state 79
-    NOT            shift, and go to state 80
     REGEX_HEX      shift, and go to state 28
     REGEX_ID       shift, and go to state 14
     REGEX_DECIMAL  shift, and go to state 29
-    REGEX_CHAR     shift, and go to state 81
+    REGEX_CHAR     shift, and go to state 79
+    MINUS          shift, and go to state 80
+    NOT            shift, and go to state 81
 
     method_call   go to state 82
     callout_call  go to state 83
     method_name   go to state 66
     location      go to state 84
-    expr          go to state 140
+    expr          go to state 142
     literal       go to state 86
     id            go to state 68
     int_literal   go to state 87
@@ -1606,229 +1667,368 @@ State 129
     char_literal  go to state 89
 
 
-State 130
+State 129
 
    26 statement: location assign_op expr . SEMICOLON
-   55 expr: expr . bin_op expr
+   55 expr: expr . arith_op expr
+   56     | expr . rel_op expr
+   57     | expr . eq_op expr
+   58     | expr . cond_op expr
 
-    SEMICOLON  shift, and go to state 141
-    LT         shift, and go to state 108
-    GT         shift, and go to state 109
-    LE         shift, and go to state 110
-    GE         shift, and go to state 111
-    PLUS       shift, and go to state 112
-    MINUS      shift, and go to state 113
-    MUL        shift, and go to state 114
-    DIV        shift, and go to state 115
-    MOD        shift, and go to state 116
-    ANDAND     shift, and go to state 117
-    OROR       shift, and go to state 118
-    NEQ        shift, and go to state 119
+    SEMICOLON  shift, and go to state 143
+    NEQ        shift, and go to state 108
+    LE         shift, and go to state 109
+    GE         shift, and go to state 110
+    LT         shift, and go to state 111
+    GT         shift, and go to state 112
+    OROR       shift, and go to state 113
+    ANDAND     shift, and go to state 114
+    PLUS       shift, and go to state 115
+    MINUS      shift, and go to state 116
+    MUL        shift, and go to state 117
+    DIV        shift, and go to state 118
+    MOD        shift, and go to state 119
     EQEQ       shift, and go to state 120
 
-    bin_op    go to state 121
-    arith_op  go to state 122
-    rel_op    go to state 123
-    eq_op     go to state 124
-    cond_op   go to state 125
+    arith_op  go to state 121
+    rel_op    go to state 122
+    eq_op     go to state 123
+    cond_op   go to state 124
+
+
+State 130
+
+   50 location: id LEFT_SQUARE expr . RIGHT_SQUARE
+   55 expr: expr . arith_op expr
+   56     | expr . rel_op expr
+   57     | expr . eq_op expr
+   58     | expr . cond_op expr
+
+    RIGHT_SQUARE  shift, and go to state 144
+    NEQ           shift, and go to state 108
+    LE            shift, and go to state 109
+    GE            shift, and go to state 110
+    LT            shift, and go to state 111
+    GT            shift, and go to state 112
+    OROR          shift, and go to state 113
+    ANDAND        shift, and go to state 114
+    PLUS          shift, and go to state 115
+    MINUS         shift, and go to state 116
+    MUL           shift, and go to state 117
+    DIV           shift, and go to state 118
+    MOD           shift, and go to state 119
+    EQEQ          shift, and go to state 120
+
+    arith_op  go to state 121
+    rel_op    go to state 122
+    eq_op     go to state 123
+    cond_op   go to state 124
 
 
 State 131
-
-   50 location: id LEFT_SQUARE expr . RIGHT_SQUARE
-   55 expr: expr . bin_op expr
-
-    RIGHT_SQUARE  shift, and go to state 142
-    LT            shift, and go to state 108
-    GT            shift, and go to state 109
-    LE            shift, and go to state 110
-    GE            shift, and go to state 111
-    PLUS          shift, and go to state 112
-    MINUS         shift, and go to state 113
-    MUL           shift, and go to state 114
-    DIV           shift, and go to state 115
-    MOD           shift, and go to state 116
-    ANDAND        shift, and go to state 117
-    OROR          shift, and go to state 118
-    NEQ           shift, and go to state 119
-    EQEQ          shift, and go to state 120
-
-    bin_op    go to state 121
-    arith_op  go to state 122
-    rel_op    go to state 123
-    eq_op     go to state 124
-    cond_op   go to state 125
-
-
-State 132
 
    21 multi_id: multi_id id COMMA .
 
     $default  reduce using rule 21 (multi_id)
 
 
-State 133
+State 132
 
    19 multi_var_decl: multi_var_decl type multi_id id SEMICOLON .
 
     $default  reduce using rule 19 (multi_var_decl)
 
 
-State 134
+State 133
 
    29 statement: IF LEFT_ROUND expr RIGHT_ROUND . block ELSE block
    30          | IF LEFT_ROUND expr RIGHT_ROUND . block
 
     LEFT_CURLY  shift, and go to state 35
 
-    block  go to state 143
+    block  go to state 145
+
+
+State 134
+
+   31 statement: FOR id EQ expr . COMMA expr block
+   55 expr: expr . arith_op expr
+   56     | expr . rel_op expr
+   57     | expr . eq_op expr
+   58     | expr . cond_op expr
+
+    COMMA   shift, and go to state 146
+    NEQ     shift, and go to state 108
+    LE      shift, and go to state 109
+    GE      shift, and go to state 110
+    LT      shift, and go to state 111
+    GT      shift, and go to state 112
+    OROR    shift, and go to state 113
+    ANDAND  shift, and go to state 114
+    PLUS    shift, and go to state 115
+    MINUS   shift, and go to state 116
+    MUL     shift, and go to state 117
+    DIV     shift, and go to state 118
+    MOD     shift, and go to state 119
+    EQEQ    shift, and go to state 120
+
+    arith_op  go to state 121
+    rel_op    go to state 122
+    eq_op     go to state 123
+    cond_op   go to state 124
 
 
 State 135
 
-   31 statement: FOR id EQ expr . COMMA expr block
-   55 expr: expr . bin_op expr
+   61 expr: LEFT_ROUND expr RIGHT_ROUND .
 
-    COMMA   shift, and go to state 144
-    LT      shift, and go to state 108
-    GT      shift, and go to state 109
-    LE      shift, and go to state 110
-    GE      shift, and go to state 111
-    PLUS    shift, and go to state 112
-    MINUS   shift, and go to state 113
-    MUL     shift, and go to state 114
-    DIV     shift, and go to state 115
-    MOD     shift, and go to state 116
-    ANDAND  shift, and go to state 117
-    OROR    shift, and go to state 118
-    NEQ     shift, and go to state 119
-    EQEQ    shift, and go to state 120
-
-    bin_op    go to state 121
-    arith_op  go to state 122
-    rel_op    go to state 123
-    eq_op     go to state 124
-    cond_op   go to state 125
+    $default  reduce using rule 61 (expr)
 
 
 State 136
 
-   58 expr: LEFT_ROUND expr RIGHT_ROUND .
+   55 expr: expr . arith_op expr
+   55     | expr arith_op expr .
+   56     | expr . rel_op expr
+   57     | expr . eq_op expr
+   58     | expr . cond_op expr
 
-    $default  reduce using rule 58 (expr)
-
-
-State 137
-
-   55 expr: expr . bin_op expr
-   55     | expr bin_op expr .
-
-    LT      shift, and go to state 108
-    GT      shift, and go to state 109
-    LE      shift, and go to state 110
-    GE      shift, and go to state 111
-    PLUS    shift, and go to state 112
-    MINUS   shift, and go to state 113
-    MUL     shift, and go to state 114
-    DIV     shift, and go to state 115
-    MOD     shift, and go to state 116
-    ANDAND  shift, and go to state 117
-    OROR    shift, and go to state 118
-    NEQ     shift, and go to state 119
+    NEQ     shift, and go to state 108
+    LE      shift, and go to state 109
+    GE      shift, and go to state 110
+    LT      shift, and go to state 111
+    GT      shift, and go to state 112
+    OROR    shift, and go to state 113
+    ANDAND  shift, and go to state 114
+    PLUS    shift, and go to state 115
+    MINUS   shift, and go to state 116
+    MUL     shift, and go to state 117
+    DIV     shift, and go to state 118
+    MOD     shift, and go to state 119
     EQEQ    shift, and go to state 120
 
-    LT        [reduce using rule 55 (expr)]
-    GT        [reduce using rule 55 (expr)]
+    NEQ       [reduce using rule 55 (expr)]
     LE        [reduce using rule 55 (expr)]
     GE        [reduce using rule 55 (expr)]
+    LT        [reduce using rule 55 (expr)]
+    GT        [reduce using rule 55 (expr)]
+    OROR      [reduce using rule 55 (expr)]
+    ANDAND    [reduce using rule 55 (expr)]
     PLUS      [reduce using rule 55 (expr)]
     MINUS     [reduce using rule 55 (expr)]
     MUL       [reduce using rule 55 (expr)]
     DIV       [reduce using rule 55 (expr)]
     MOD       [reduce using rule 55 (expr)]
-    ANDAND    [reduce using rule 55 (expr)]
-    OROR      [reduce using rule 55 (expr)]
-    NEQ       [reduce using rule 55 (expr)]
     EQEQ      [reduce using rule 55 (expr)]
     $default  reduce using rule 55 (expr)
 
-    bin_op    go to state 121
-    arith_op  go to state 122
-    rel_op    go to state 123
-    eq_op     go to state 124
-    cond_op   go to state 125
+    arith_op  go to state 121
+    rel_op    go to state 122
+    eq_op     go to state 123
+    cond_op   go to state 124
+
+
+State 137
+
+   55 expr: expr . arith_op expr
+   56     | expr . rel_op expr
+   56     | expr rel_op expr .
+   57     | expr . eq_op expr
+   58     | expr . cond_op expr
+
+    NEQ     shift, and go to state 108
+    LE      shift, and go to state 109
+    GE      shift, and go to state 110
+    LT      shift, and go to state 111
+    GT      shift, and go to state 112
+    OROR    shift, and go to state 113
+    ANDAND  shift, and go to state 114
+    PLUS    shift, and go to state 115
+    MINUS   shift, and go to state 116
+    MUL     shift, and go to state 117
+    DIV     shift, and go to state 118
+    MOD     shift, and go to state 119
+    EQEQ    shift, and go to state 120
+
+    NEQ       [reduce using rule 56 (expr)]
+    LE        [reduce using rule 56 (expr)]
+    GE        [reduce using rule 56 (expr)]
+    LT        [reduce using rule 56 (expr)]
+    GT        [reduce using rule 56 (expr)]
+    OROR      [reduce using rule 56 (expr)]
+    ANDAND    [reduce using rule 56 (expr)]
+    PLUS      [reduce using rule 56 (expr)]
+    MINUS     [reduce using rule 56 (expr)]
+    MUL       [reduce using rule 56 (expr)]
+    DIV       [reduce using rule 56 (expr)]
+    MOD       [reduce using rule 56 (expr)]
+    EQEQ      [reduce using rule 56 (expr)]
+    $default  reduce using rule 56 (expr)
+
+    arith_op  go to state 121
+    rel_op    go to state 122
+    eq_op     go to state 123
+    cond_op   go to state 124
 
 
 State 138
+
+   55 expr: expr . arith_op expr
+   56     | expr . rel_op expr
+   57     | expr . eq_op expr
+   57     | expr eq_op expr .
+   58     | expr . cond_op expr
+
+    NEQ     shift, and go to state 108
+    LE      shift, and go to state 109
+    GE      shift, and go to state 110
+    LT      shift, and go to state 111
+    GT      shift, and go to state 112
+    OROR    shift, and go to state 113
+    ANDAND  shift, and go to state 114
+    PLUS    shift, and go to state 115
+    MINUS   shift, and go to state 116
+    MUL     shift, and go to state 117
+    DIV     shift, and go to state 118
+    MOD     shift, and go to state 119
+    EQEQ    shift, and go to state 120
+
+    NEQ       [reduce using rule 57 (expr)]
+    LE        [reduce using rule 57 (expr)]
+    GE        [reduce using rule 57 (expr)]
+    LT        [reduce using rule 57 (expr)]
+    GT        [reduce using rule 57 (expr)]
+    OROR      [reduce using rule 57 (expr)]
+    ANDAND    [reduce using rule 57 (expr)]
+    PLUS      [reduce using rule 57 (expr)]
+    MINUS     [reduce using rule 57 (expr)]
+    MUL       [reduce using rule 57 (expr)]
+    DIV       [reduce using rule 57 (expr)]
+    MOD       [reduce using rule 57 (expr)]
+    EQEQ      [reduce using rule 57 (expr)]
+    $default  reduce using rule 57 (expr)
+
+    arith_op  go to state 121
+    rel_op    go to state 122
+    eq_op     go to state 123
+    cond_op   go to state 124
+
+
+State 139
+
+   55 expr: expr . arith_op expr
+   56     | expr . rel_op expr
+   57     | expr . eq_op expr
+   58     | expr . cond_op expr
+   58     | expr cond_op expr .
+
+    NEQ     shift, and go to state 108
+    LE      shift, and go to state 109
+    GE      shift, and go to state 110
+    LT      shift, and go to state 111
+    GT      shift, and go to state 112
+    OROR    shift, and go to state 113
+    ANDAND  shift, and go to state 114
+    PLUS    shift, and go to state 115
+    MINUS   shift, and go to state 116
+    MUL     shift, and go to state 117
+    DIV     shift, and go to state 118
+    MOD     shift, and go to state 119
+    EQEQ    shift, and go to state 120
+
+    NEQ       [reduce using rule 58 (expr)]
+    LE        [reduce using rule 58 (expr)]
+    GE        [reduce using rule 58 (expr)]
+    LT        [reduce using rule 58 (expr)]
+    GT        [reduce using rule 58 (expr)]
+    OROR      [reduce using rule 58 (expr)]
+    ANDAND    [reduce using rule 58 (expr)]
+    PLUS      [reduce using rule 58 (expr)]
+    MINUS     [reduce using rule 58 (expr)]
+    MUL       [reduce using rule 58 (expr)]
+    DIV       [reduce using rule 58 (expr)]
+    MOD       [reduce using rule 58 (expr)]
+    EQEQ      [reduce using rule 58 (expr)]
+    $default  reduce using rule 58 (expr)
+
+    arith_op  go to state 121
+    rel_op    go to state 122
+    eq_op     go to state 123
+    cond_op   go to state 124
+
+
+State 140
 
    42 callout_call: CALLOUT LEFT_ROUND string_literal RIGHT_ROUND .
 
     $default  reduce using rule 42 (callout_call)
 
 
-State 139
+State 141
 
    43 callout_call: CALLOUT LEFT_ROUND string_literal COMMA . multi_callout_arg callout_arg RIGHT_ROUND
 
     $default  reduce using rule 46 (multi_callout_arg)
 
-    multi_callout_arg  go to state 145
+    multi_callout_arg  go to state 147
 
 
-State 140
+State 142
 
    41 method_call: method_name LEFT_ROUND multi_expr expr . RIGHT_ROUND
    45 multi_expr: multi_expr expr . COMMA
-   55 expr: expr . bin_op expr
+   55 expr: expr . arith_op expr
+   56     | expr . rel_op expr
+   57     | expr . eq_op expr
+   58     | expr . cond_op expr
 
-    RIGHT_ROUND  shift, and go to state 146
-    COMMA        shift, and go to state 147
-    LT           shift, and go to state 108
-    GT           shift, and go to state 109
-    LE           shift, and go to state 110
-    GE           shift, and go to state 111
-    PLUS         shift, and go to state 112
-    MINUS        shift, and go to state 113
-    MUL          shift, and go to state 114
-    DIV          shift, and go to state 115
-    MOD          shift, and go to state 116
-    ANDAND       shift, and go to state 117
-    OROR         shift, and go to state 118
-    NEQ          shift, and go to state 119
+    RIGHT_ROUND  shift, and go to state 148
+    COMMA        shift, and go to state 149
+    NEQ          shift, and go to state 108
+    LE           shift, and go to state 109
+    GE           shift, and go to state 110
+    LT           shift, and go to state 111
+    GT           shift, and go to state 112
+    OROR         shift, and go to state 113
+    ANDAND       shift, and go to state 114
+    PLUS         shift, and go to state 115
+    MINUS        shift, and go to state 116
+    MUL          shift, and go to state 117
+    DIV          shift, and go to state 118
+    MOD          shift, and go to state 119
     EQEQ         shift, and go to state 120
 
-    bin_op    go to state 121
-    arith_op  go to state 122
-    rel_op    go to state 123
-    eq_op     go to state 124
-    cond_op   go to state 125
+    arith_op  go to state 121
+    rel_op    go to state 122
+    eq_op     go to state 123
+    cond_op   go to state 124
 
 
-State 141
+State 143
 
    26 statement: location assign_op expr SEMICOLON .
 
     $default  reduce using rule 26 (statement)
 
 
-State 142
+State 144
 
    50 location: id LEFT_SQUARE expr RIGHT_SQUARE .
 
     $default  reduce using rule 50 (location)
 
 
-State 143
+State 145
 
    29 statement: IF LEFT_ROUND expr RIGHT_ROUND block . ELSE block
    30          | IF LEFT_ROUND expr RIGHT_ROUND block .
 
-    ELSE  shift, and go to state 148
+    ELSE  shift, and go to state 150
 
     $default  reduce using rule 30 (statement)
 
 
-State 144
+State 146
 
    31 statement: FOR id EQ expr COMMA . expr block
 
@@ -1836,18 +2036,18 @@ State 144
     CALLOUT        shift, and go to state 61
     TRUE           shift, and go to state 76
     FALSE          shift, and go to state 77
-    MINUS          shift, and go to state 79
-    NOT            shift, and go to state 80
     REGEX_HEX      shift, and go to state 28
     REGEX_ID       shift, and go to state 14
     REGEX_DECIMAL  shift, and go to state 29
-    REGEX_CHAR     shift, and go to state 81
+    REGEX_CHAR     shift, and go to state 79
+    MINUS          shift, and go to state 80
+    NOT            shift, and go to state 81
 
     method_call   go to state 82
     callout_call  go to state 83
     method_name   go to state 66
     location      go to state 84
-    expr          go to state 149
+    expr          go to state 151
     literal       go to state 86
     id            go to state 68
     int_literal   go to state 87
@@ -1855,7 +2055,7 @@ State 144
     char_literal  go to state 89
 
 
-State 145
+State 147
 
    43 callout_call: CALLOUT LEFT_ROUND string_literal COMMA multi_callout_arg . callout_arg RIGHT_ROUND
    47 multi_callout_arg: multi_callout_arg . callout_arg COMMA
@@ -1864,145 +2064,149 @@ State 145
     CALLOUT        shift, and go to state 61
     TRUE           shift, and go to state 76
     FALSE          shift, and go to state 77
-    MINUS          shift, and go to state 79
-    NOT            shift, and go to state 80
     REGEX_HEX      shift, and go to state 28
     REGEX_ID       shift, and go to state 14
     REGEX_DECIMAL  shift, and go to state 29
-    REGEX_CHAR     shift, and go to state 81
-    REGEX_STRING   shift, and go to state 126
+    REGEX_CHAR     shift, and go to state 79
+    REGEX_STRING   shift, and go to state 125
+    MINUS          shift, and go to state 80
+    NOT            shift, and go to state 81
 
     method_call     go to state 82
     callout_call    go to state 83
     method_name     go to state 66
     location        go to state 84
-    expr            go to state 150
-    callout_arg     go to state 151
+    expr            go to state 152
+    callout_arg     go to state 153
     literal         go to state 86
     id              go to state 68
     int_literal     go to state 87
     bool_literal    go to state 88
     char_literal    go to state 89
-    string_literal  go to state 152
+    string_literal  go to state 154
 
 
-State 146
+State 148
 
    41 method_call: method_name LEFT_ROUND multi_expr expr RIGHT_ROUND .
 
     $default  reduce using rule 41 (method_call)
 
 
-State 147
+State 149
 
    45 multi_expr: multi_expr expr COMMA .
 
     $default  reduce using rule 45 (multi_expr)
 
 
-State 148
+State 150
 
    29 statement: IF LEFT_ROUND expr RIGHT_ROUND block ELSE . block
 
     LEFT_CURLY  shift, and go to state 35
 
-    block  go to state 153
-
-
-State 149
-
-   31 statement: FOR id EQ expr COMMA expr . block
-   55 expr: expr . bin_op expr
-
-    LEFT_CURLY  shift, and go to state 35
-    LT          shift, and go to state 108
-    GT          shift, and go to state 109
-    LE          shift, and go to state 110
-    GE          shift, and go to state 111
-    PLUS        shift, and go to state 112
-    MINUS       shift, and go to state 113
-    MUL         shift, and go to state 114
-    DIV         shift, and go to state 115
-    MOD         shift, and go to state 116
-    ANDAND      shift, and go to state 117
-    OROR        shift, and go to state 118
-    NEQ         shift, and go to state 119
-    EQEQ        shift, and go to state 120
-
-    block     go to state 154
-    bin_op    go to state 121
-    arith_op  go to state 122
-    rel_op    go to state 123
-    eq_op     go to state 124
-    cond_op   go to state 125
-
-
-State 150
-
-   55 expr: expr . bin_op expr
-   59 callout_arg: expr .
-
-    LT      shift, and go to state 108
-    GT      shift, and go to state 109
-    LE      shift, and go to state 110
-    GE      shift, and go to state 111
-    PLUS    shift, and go to state 112
-    MINUS   shift, and go to state 113
-    MUL     shift, and go to state 114
-    DIV     shift, and go to state 115
-    MOD     shift, and go to state 116
-    ANDAND  shift, and go to state 117
-    OROR    shift, and go to state 118
-    NEQ     shift, and go to state 119
-    EQEQ    shift, and go to state 120
-
-    $default  reduce using rule 59 (callout_arg)
-
-    bin_op    go to state 121
-    arith_op  go to state 122
-    rel_op    go to state 123
-    eq_op     go to state 124
-    cond_op   go to state 125
+    block  go to state 155
 
 
 State 151
 
-   43 callout_call: CALLOUT LEFT_ROUND string_literal COMMA multi_callout_arg callout_arg . RIGHT_ROUND
-   47 multi_callout_arg: multi_callout_arg callout_arg . COMMA
+   31 statement: FOR id EQ expr COMMA expr . block
+   55 expr: expr . arith_op expr
+   56     | expr . rel_op expr
+   57     | expr . eq_op expr
+   58     | expr . cond_op expr
 
-    RIGHT_ROUND  shift, and go to state 155
-    COMMA        shift, and go to state 156
+    LEFT_CURLY  shift, and go to state 35
+    NEQ         shift, and go to state 108
+    LE          shift, and go to state 109
+    GE          shift, and go to state 110
+    LT          shift, and go to state 111
+    GT          shift, and go to state 112
+    OROR        shift, and go to state 113
+    ANDAND      shift, and go to state 114
+    PLUS        shift, and go to state 115
+    MINUS       shift, and go to state 116
+    MUL         shift, and go to state 117
+    DIV         shift, and go to state 118
+    MOD         shift, and go to state 119
+    EQEQ        shift, and go to state 120
+
+    block     go to state 156
+    arith_op  go to state 121
+    rel_op    go to state 122
+    eq_op     go to state 123
+    cond_op   go to state 124
 
 
 State 152
 
-   60 callout_arg: string_literal .
+   55 expr: expr . arith_op expr
+   56     | expr . rel_op expr
+   57     | expr . eq_op expr
+   58     | expr . cond_op expr
+   62 callout_arg: expr .
 
-    $default  reduce using rule 60 (callout_arg)
+    NEQ     shift, and go to state 108
+    LE      shift, and go to state 109
+    GE      shift, and go to state 110
+    LT      shift, and go to state 111
+    GT      shift, and go to state 112
+    OROR    shift, and go to state 113
+    ANDAND  shift, and go to state 114
+    PLUS    shift, and go to state 115
+    MINUS   shift, and go to state 116
+    MUL     shift, and go to state 117
+    DIV     shift, and go to state 118
+    MOD     shift, and go to state 119
+    EQEQ    shift, and go to state 120
+
+    $default  reduce using rule 62 (callout_arg)
+
+    arith_op  go to state 121
+    rel_op    go to state 122
+    eq_op     go to state 123
+    cond_op   go to state 124
 
 
 State 153
+
+   43 callout_call: CALLOUT LEFT_ROUND string_literal COMMA multi_callout_arg callout_arg . RIGHT_ROUND
+   47 multi_callout_arg: multi_callout_arg callout_arg . COMMA
+
+    RIGHT_ROUND  shift, and go to state 157
+    COMMA        shift, and go to state 158
+
+
+State 154
+
+   63 callout_arg: string_literal .
+
+    $default  reduce using rule 63 (callout_arg)
+
+
+State 155
 
    29 statement: IF LEFT_ROUND expr RIGHT_ROUND block ELSE block .
 
     $default  reduce using rule 29 (statement)
 
 
-State 154
+State 156
 
    31 statement: FOR id EQ expr COMMA expr block .
 
     $default  reduce using rule 31 (statement)
 
 
-State 155
+State 157
 
    43 callout_call: CALLOUT LEFT_ROUND string_literal COMMA multi_callout_arg callout_arg RIGHT_ROUND .
 
     $default  reduce using rule 43 (callout_call)
 
 
-State 156
+State 158
 
    47 multi_callout_arg: multi_callout_arg callout_arg COMMA .
 

@@ -145,9 +145,9 @@ void SomeVisitor::visit(class StatementList* node) {
 
 void SomeVisitor::visit(class AssignStmt* node) {
 	cout << "Assign statement: ";
-	cout << "left: "; node->left->accept(this); cout << endl;
+	cout << "left: "; node->left_part->accept(this); cout << endl;
 	cout << "op: " << *(node->op) << endl;
-	cout << "right: "; node->right->accept(this); cout << endl;
+	cout << "right: "; node->right_part->accept(this); cout << endl;
 }
 
 void SomeVisitor::visit(class IfElseStmt* node) {
@@ -165,12 +165,7 @@ void SomeVisitor::visit(class IfStmt* node) {
 
 void SomeVisitor::visit(class ForStmt* node) {
 	cout << "For statement: ";
-	if (node->var_type == "variable") {
-		cout << "loop variable: "; node->loop_var->accept(this); cout << ", ";
-	}
-	else if (node->var_type == "arr") {
-		cout << "loop variable: "; node->loop_var_arr->accept(this); cout << ", ";
-	}
+	cout << "loop variable: "; node->loop_var->accept(this); cout << ", ";
 	cout << "start condition: "; node->start_cond->accept(this); cout << ", ";
 	cout << "end condition: "; node->right_cond->accept(this); cout << ", ";
 	cout << "code block: "; node->code_block->accept(this); cout << endl;

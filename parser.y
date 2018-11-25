@@ -35,23 +35,37 @@ int errors=0;
 %token <lit> COMMA
 %token <lit> SEMICOLON
 
-%left <lit> LT GT LE GE
-%left <lit> PLUS MINUS 
-%left <lit> MUL DIV
-%nonassoc <lit> MOD
-%left <lit> ANDAND OROR NOT NEQ EQEQ
-%left <lit> PLUSEQ MINEQ EQ
-
 %token <num> REGEX_HEX
 %token <lit> REGEX_ID
 %token <num> REGEX_DECIMAL
 %token <lit> REGEX_CHAR
 %token <lit> REGEX_STRING
 
+/*%left <lit> ANDAND OROR NOT NEQ EQEQ
+%left <lit> LT GT LE GE
+%left <lit> PLUS MINUS 
+%left <lit> MUL DIV
+%nonassoc <lit> MOD
+%left <lit> PLUSEQ MINEQ EQ*/
+
+%left <lit> NEQ
+%left <lit> LE
+%left <lit> GE
+%left <lit> LT
+%left <lit> GT
+%left <lit> OROR
+%left <lit> ANDAND
+%left <lit> PLUS MINUS
+%left <lit> MUL DIV MOD
+%left <lit> NOT
+%left <lit> EQEQ
+%left <lit> EQ
+%left <lit> PLUSEQ MINEQ
+
 %type <Programs> program;
 %type <FieldDeclLists> field_decl;
 %type <VariableLists> field_decls;
-%type <VariableLists> follow
+%type <VariableLists> follow;
 %type <MethodDeclLists> method_decl;
 %type <MethodDecls> method_decls;
 %type <ParamLists> param;
@@ -70,7 +84,7 @@ int errors=0;
 %type <Locations> location;
 %type <Exprs> expr;
 %type <CalloutArgs> callout_arg;
-%type <lit> bin_op;
+// %type <lit> bin_op;
 %type <lit> arith_op;
 %type <lit> rel_op;
 %type <lit> eq_op;
@@ -174,11 +188,24 @@ location: id 																				{ $$ = new Location($1); }
 	| id LEFT_SQUARE expr RIGHT_SQUARE 														{ $$ = new Location($1, $3); }
 	;
 
+/*expr: location 																				{ $$ = $1; }
+	| method_call 																			{ $$ = $1; }
+	| callout_call 																			{ $$ = $1; }
+	| literal 																				{ $$ = $1; }
+	| expr bin_op expr FIXXXXXXXXXXXXX 													{ $$ = new BinaryOpExpression($1, $2, $3); }
+	| MINUS expr 																			{ $$ = new UnaryOpExpression($1, $2); }
+	| NOT expr 																				{ $$ = new UnaryOpExpression($1, $2); }
+	| LEFT_ROUND expr RIGHT_ROUND 															{ $$ = $2; }
+	;*/
+
 expr: location 																				{ $$ = $1; }
 	| method_call 																			{ $$ = $1; }
 	| callout_call 																			{ $$ = $1; }
 	| literal 																				{ $$ = $1; }
-	| expr bin_op expr /*FIXXXXXXXXXXXXX*/ 													{ $$ = new BinaryOpExpression($1, $2, $3); }
+	| expr arith_op expr /*FIXXXXXXXXXXXXX*/ 												{ $$ = new BinaryOpExpression($1, $2, $3); }
+	| expr rel_op expr /*FIXXXXXXXXXXXXX*/ 													{ $$ = new BinaryOpExpression($1, $2, $3); }
+	| expr eq_op expr /*FIXXXXXXXXXXXXX*/ 													{ $$ = new BinaryOpExpression($1, $2, $3); }
+	| expr cond_op expr /*FIXXXXXXXXXXXXX*/ 												{ $$ = new BinaryOpExpression($1, $2, $3); }
 	| MINUS expr 																			{ $$ = new UnaryOpExpression($1, $2); }
 	| NOT expr 																				{ $$ = new UnaryOpExpression($1, $2); }
 	| LEFT_ROUND expr RIGHT_ROUND 															{ $$ = $2; }
@@ -188,11 +215,11 @@ callout_arg: expr 																			{ $$ = new CalloutArg($1); }
 	| string_literal 																		{ $$ = new CalloutArg($1); }
 	;
 
-bin_op: arith_op 																			{ $$ = $1; }
+/*bin_op: arith_op 																			{ $$ = $1; }
 	| rel_op																				{ $$ = $1; }
 	| eq_op 																				{ $$ = $1; }
 	| cond_op 																				{ $$ = $1; }
-	;
+	;*/
 
 arith_op: PLUS 																				{ $$ = $1; }
 	| MINUS 																				{ $$ = $1; }
@@ -243,7 +270,21 @@ int main(int argc, char **argv) {
 	yyparse();
 
 	if (fl_parsed_correct == true) {
-		class SomeVisitor *visitor = new SomeVisitor();
-		visitor->visit(rootAst);
+		// Checking the AST construction
+		/* class SomeVisitor *visitor = new SomeVisitor();
+		visitor->visit(rootAst); */
+
+		// Semantic checking
+		/* cout << endl << endl;
+		class SemanticVisitor *semantic_visitor = new SemanticVisitor();
+		semantic_visitor->visit(rootAst);
+		for (auto error: semantic_visitor->errors) {
+			cout << error << endl;
+		}*/
+
+		// Code generation
+		cout << endl << endl;
+		rootAst->codegen();
+		rootAst->print_llvm_ir();
 	}
 }
