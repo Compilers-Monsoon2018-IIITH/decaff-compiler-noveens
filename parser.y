@@ -41,26 +41,12 @@ int errors=0;
 %token <lit> REGEX_CHAR
 %token <lit> REGEX_STRING
 
-/*%left <lit> ANDAND OROR NOT NEQ EQEQ
+%left <lit> ANDAND OROR NOT NEQ EQEQ
 %left <lit> LT GT LE GE
 %left <lit> PLUS MINUS 
 %left <lit> MUL DIV
 %nonassoc <lit> MOD
-%left <lit> PLUSEQ MINEQ EQ*/
-
-%left <lit> NEQ
-%left <lit> LE
-%left <lit> GE
-%left <lit> LT
-%left <lit> GT
-%left <lit> OROR
-%left <lit> ANDAND
-%left <lit> PLUS MINUS
-%left <lit> MUL DIV MOD
-%left <lit> NOT
-%left <lit> EQEQ
-%left <lit> EQ
-%left <lit> PLUSEQ MINEQ
+%left <lit> PLUSEQ MINEQ EQ
 
 %type <Programs> program;
 %type <FieldDeclLists> field_decl;
@@ -84,11 +70,6 @@ int errors=0;
 %type <Locations> location;
 %type <Exprs> expr;
 %type <CalloutArgs> callout_arg;
-// %type <lit> bin_op;
-%type <lit> arith_op;
-%type <lit> rel_op;
-%type <lit> eq_op;
-%type <lit> cond_op;
 %type <Literals> literal;
 %type <TerminalVariables> id;
 %type <num> int_literal;
@@ -188,24 +169,23 @@ location: id 																				{ $$ = new Location($1); }
 	| id LEFT_SQUARE expr RIGHT_SQUARE 														{ $$ = new Location($1, $3); }
 	;
 
-/*expr: location 																				{ $$ = $1; }
-	| method_call 																			{ $$ = $1; }
-	| callout_call 																			{ $$ = $1; }
-	| literal 																				{ $$ = $1; }
-	| expr bin_op expr FIXXXXXXXXXXXXX 													{ $$ = new BinaryOpExpression($1, $2, $3); }
-	| MINUS expr 																			{ $$ = new UnaryOpExpression($1, $2); }
-	| NOT expr 																				{ $$ = new UnaryOpExpression($1, $2); }
-	| LEFT_ROUND expr RIGHT_ROUND 															{ $$ = $2; }
-	;*/
-
 expr: location 																				{ $$ = $1; }
 	| method_call 																			{ $$ = $1; }
 	| callout_call 																			{ $$ = $1; }
 	| literal 																				{ $$ = $1; }
-	| expr arith_op expr /*FIXXXXXXXXXXXXX*/ 												{ $$ = new BinaryOpExpression($1, $2, $3); }
-	| expr rel_op expr /*FIXXXXXXXXXXXXX*/ 													{ $$ = new BinaryOpExpression($1, $2, $3); }
-	| expr eq_op expr /*FIXXXXXXXXXXXXX*/ 													{ $$ = new BinaryOpExpression($1, $2, $3); }
-	| expr cond_op expr /*FIXXXXXXXXXXXXX*/ 												{ $$ = new BinaryOpExpression($1, $2, $3); }
+	| expr PLUS expr  																		{ $$ = new BinaryOpExpression($1, $2, $3); }
+	| expr MINUS expr  																		{ $$ = new BinaryOpExpression($1, $2, $3); }
+	| expr MUL expr  																		{ $$ = new BinaryOpExpression($1, $2, $3); }
+	| expr DIV expr  																		{ $$ = new BinaryOpExpression($1, $2, $3); }
+	| expr MOD expr  																		{ $$ = new BinaryOpExpression($1, $2, $3); }
+	| expr LT expr  																		{ $$ = new BinaryOpExpression($1, $2, $3); }
+	| expr GT expr  																		{ $$ = new BinaryOpExpression($1, $2, $3); }
+	| expr LE expr  																		{ $$ = new BinaryOpExpression($1, $2, $3); }
+	| expr GE expr  																		{ $$ = new BinaryOpExpression($1, $2, $3); }
+	| expr EQEQ expr  																		{ $$ = new BinaryOpExpression($1, $2, $3); }
+	| expr NEQ expr  																		{ $$ = new BinaryOpExpression($1, $2, $3); }
+	| expr ANDAND expr  																	{ $$ = new BinaryOpExpression($1, $2, $3); }
+	| expr OROR expr  																		{ $$ = new BinaryOpExpression($1, $2, $3); }
 	| MINUS expr 																			{ $$ = new UnaryOpExpression($1, $2); }
 	| NOT expr 																				{ $$ = new UnaryOpExpression($1, $2); }
 	| LEFT_ROUND expr RIGHT_ROUND 															{ $$ = $2; }
@@ -213,33 +193,6 @@ expr: location 																				{ $$ = $1; }
 
 callout_arg: expr 																			{ $$ = new CalloutArg($1); }
 	| string_literal 																		{ $$ = new CalloutArg($1); }
-	;
-
-/*bin_op: arith_op 																			{ $$ = $1; }
-	| rel_op																				{ $$ = $1; }
-	| eq_op 																				{ $$ = $1; }
-	| cond_op 																				{ $$ = $1; }
-	;*/
-
-arith_op: PLUS 																				{ $$ = $1; }
-	| MINUS 																				{ $$ = $1; }
-	| MUL 																					{ $$ = $1; }
-	| DIV 																					{ $$ = $1; }
-	| MOD 																					{ $$ = $1; }
-	;
-
-rel_op: GT  																				{ $$ = $1; }
-	| LT  																					{ $$ = $1; }
-	| GE 																					{ $$ = $1; }
-	| LE 																					{ $$ = $1; }
-	;
-
-eq_op: EQEQ  																				{ $$ = $1; }
-	| NEQ 																					{ $$ = $1; }
-	;
-
-cond_op: ANDAND 																			{ $$ = $1; }
-	| OROR 																					{ $$ = $1; }
 	;
 
 literal: int_literal 																		{ $$ = new Literal($1); }
@@ -258,10 +211,10 @@ bool_literal: TRUE 																			{ $$ = $1; }
 	| FALSE 																				{ $$ = $1; }
 	;
 
-char_literal: /*SQUOT CHAR SQUOT*/ REGEX_CHAR 												{ $$ = $1; }
+char_literal: REGEX_CHAR 																	{ $$ = $1; }
 	;
 
-string_literal: /*DQUOT multichar DQUOT*/ REGEX_STRING 										{ $$ = $1; }
+string_literal: REGEX_STRING 																{ $$ = $1; }
 	;
 
 %%
@@ -274,17 +227,13 @@ int main(int argc, char **argv) {
 		/* class SomeVisitor *visitor = new SomeVisitor();
 		visitor->visit(rootAst); */
 
+		cout << endl << endl;
+
 		// Semantic checking
-		/* cout << endl << endl;
-		class SemanticVisitor *semantic_visitor = new SemanticVisitor();
+		class SemanticVisitor *semantic_visitor = new SemanticVisitor(new LogErrorClass());
 		semantic_visitor->visit(rootAst);
-		for (auto error: semantic_visitor->errors) {
-			cout << error << endl;
-		}*/
 
 		// Code generation
-		cout << endl << endl;
-		rootAst->codegen();
-		rootAst->print_llvm_ir();
+		rootAst->codegen(semantic_visitor->logger_class);
 	}
 }

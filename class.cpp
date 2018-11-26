@@ -3,6 +3,11 @@
 
 using namespace std;
 
+void LogErrorClass::add(string err) {
+	all_errors.push_back(err);
+	cout << "ERROR #" << all_errors.size() << ": " << "\033[1;31m" << err << "\033[0m" << endl;
+}
+
 // Class-1
 BinaryOpExpression::BinaryOpExpression(class Expr* _left, string *_op, class Expr* _right)
 : op(_op), left(_left), right(_right) {};
@@ -20,7 +25,10 @@ MethodCall::MethodCall(class TerminalVariable* _method_name)
 // Class-4
 MethodArgInpList::MethodArgInpList() {};
 void MethodArgInpList::push_back(class Expr* arg) {
-	arg_list.push_back(arg);
+	// arg_list.push_back(arg);
+
+	// Reverse order
+	arg_list.insert(arg_list.begin(), arg);
 }
 
 // Class-5
@@ -66,10 +74,16 @@ void FieldDeclList::push_back(class VariableList* decleration) {
 // Class-11
 VariableList::VariableList() {};
 void VariableList::push_back(class TerminalVariable* var) {
-	declarations.push_back(var);
+	// declarations.push_back(var);
+
+	// Reverse order
+	declarations.insert(declarations.begin(), var);
 }
 void VariableList::push_back(class ArrayTerminalVariable* var) {
-	declarations_array.push_back(var);
+	// declarations_array.push_back(var);
+
+	// Reverse order
+	declarations_array.insert(declarations_array.begin(), var);
 }
 void VariableList::set_type(string *type) {
 	decleration_type = type;
@@ -78,7 +92,10 @@ void VariableList::set_type(string *type) {
 // Class-12
 MethodDeclList::MethodDeclList() {};
 void MethodDeclList::push_back(class MethodDecl* decl) {
-	method_declerations_list.push_back(decl);
+	// method_declerations_list.push_back(decl);
+	
+	// To make sure the methods are pushed in the reverse order
+	method_declerations_list.insert(method_declerations_list.begin(), decl);
 }
 
 // Class-13
@@ -91,6 +108,9 @@ MethodDecl::MethodDecl(string *_return_type, class TerminalVariable* _method_nam
 ParamList::ParamList() {};
 void ParamList::push_back(string *type, class TerminalVariable* var) {
 	parameters_list.push_back(make_pair(type, var));
+
+	// Reverse order
+	// parameters_list.insert(parameters_list.begin(), make_pair(type, var));
 }
 
 // Class-15
@@ -98,6 +118,9 @@ Block::Block(class FieldDeclList* _decleration_list, class StatementList* _state
 : decleration_list(_decleration_list), statement_list(_statement_list) {};
 bool Block::has_return() {
     return statement_list->has_return();
+}
+bool Block::has_return_expr() {
+    return statement_list->has_return_expr();
 }
 
 // Class-16
@@ -107,12 +130,17 @@ void StatementList::push_back(class Statement* stat) {
 }
 bool StatementList::has_return() {
     for (auto statement: statement_list) {
-    	if (dynamic_cast<class StringRetBrkContStatement*> (statement) != nullptr) {
+    	if (statement->get_statement_type() == "RetExpr" || statement->get_statement_type() == "Ret") {
             return true;
-        }
-        if (dynamic_cast<class RetExpr*> (statement) != nullptr) {
-        	return true;
-        }
+    	}
+    }
+    return false;
+}
+bool StatementList::has_return_expr() {
+    for (auto statement: statement_list) {
+    	if (statement->get_statement_type() == "RetExpr") {
+            return true;
+    	}
     }
     return false;
 }

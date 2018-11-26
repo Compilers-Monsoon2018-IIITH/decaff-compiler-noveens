@@ -1,8 +1,11 @@
 #include <bits/stdc++.h>
 #include "class_definition.h"
+// #include "flag_parsed_correct.h"
 
 using namespace std;
 using namespace llvm;
+
+bool debug = false;
 
 static LLVMContext Context;
 static Module *TheModule = new Module("Compiler for decaf", Context);
@@ -16,19 +19,7 @@ struct loopInfo {
 };
 static stack<loopInfo*> loops;
 
-class LogErrorClass {
-	public:
-		vector<string> all_errors;
-
-		LogErrorClass() {};
-
-		void add(string);
-};
-void LogErrorClass::add(string err) {
-	cout << "\033[1;31m" << err << "\033[0m" << endl;
-	all_errors.push_back(err);
-}
-auto logger_class = new LogErrorClass();
+class LogErrorClass* logger_class;
 
 void Program::print_llvm_ir() {
 	TheModule->print(llvm::errs(), nullptr);
@@ -46,28 +37,33 @@ AllocaInst *CreateEntryBlockAlloca(Function *TheFunction, string VarName, string
     return alloca_instruction;
 }
 
-Value *Program::codegen() {
-	cout << "In codegen of: Program" << endl << flush;
+Value *Program::codegen(class LogErrorClass* logger_class_carried_on) {
+	if (debug == true) cout << "In codegen of: Program" << endl << flush;
+	logger_class = logger_class_carried_on;
 
 	// Just to pass to the function, no use
 	map<string, AllocaInst *> _;
     Value *V = field_decl->codegen(true, _);
     if (V == nullptr) {
-        logger_class->add("Invalid field Declarations");
         return nullptr;
     }
     
     V = method_decl->codegen();
     if (V == nullptr) {
-        logger_class->add("Invalid method Declarations");
         return nullptr;
+    }
+    
+    if (debug == true) cout << "Out codegen of: Program" << endl << flush;
+    
+    if (logger_class->all_errors.size() == 0) {
+    	this->print_llvm_ir();
     }
     
     return V;
 }
 
 Value *FieldDeclList::codegen(bool is_global_scope, map<string, AllocaInst *> &Old_vals) {
-	cout << "In codegen of: FieldDeclList" << endl << flush;
+	if (debug == true) cout << "In codegen of: FieldDeclList" << endl << flush;
 
 	Value *v = ConstantInt::get(Context, APInt(32, 1));
     for (auto decleration : all_declerations) {
@@ -76,11 +72,12 @@ Value *FieldDeclList::codegen(bool is_global_scope, map<string, AllocaInst *> &O
         	return v;
         }
     }
+    if (debug == true) cout << "Out codegen of: FieldDeclList" << endl << flush;
     return v;
 }
 
 Value *VariableList::codegen(bool is_global_scope, map<string, AllocaInst *> &Old_vals) {
-	cout << "In codegen of: VariableList" << endl << flush;
+	if (debug == true) cout << "In codegen of: VariableList" << endl << flush;
 
     llvm::Type *ty = nullptr;
     if (*(decleration_type) == "int") {
@@ -113,6 +110,11 @@ Value *VariableList::codegen(bool is_global_scope, map<string, AllocaInst *> &Ol
     	}
     	else {
     		// Local Variable
+    		// TODO: Need to make a vector of scopes
+    		// if (NamedValues.find(*(var->variable_name)) != NamedValues.end()) {
+    			// logger_class->add("Variable '" + *(var->variable_name) + "' redefined.");
+				// continue;
+    		// }
     		Function *TheFunction = Builder.GetInsertBlock()->getParent();
     		Value *initval;
     		if (*(decleration_type) == "int") {
@@ -153,27 +155,34 @@ Value *VariableList::codegen(bool is_global_scope, map<string, AllocaInst *> &Ol
         }
     }
     Value *v = ConstantInt::get(Context, APInt(32, 1));
+    if (debug == true) cout << "Out codegen of: VariableList" << endl << flush;
     return v;
 }
 
 Value *MethodDeclList::codegen() {
-	cout << "In codegen of: MethodDeclList" << endl << flush;
+	if (debug == true) cout << "In codegen of: MethodDeclList" << endl << flush;
 
     Value *V;// = ConstantInt::get(Context, APInt(32, 0));
     for (auto method : method_declerations_list) {
         V = method->codegen();
         if (V == nullptr) return V;
     }
+    if (debug == true) cout << "Out codegen of: MethodDeclList" << endl << flush;
     return V;
 }
 
 Function *MethodDecl::codegen() {
-	cout << "In codegen of: MethodDecl" << endl << flush;
+	if (debug == true) cout << "In codegen of: MethodDecl" << endl << flush;
 
     vector<string> param_var_names;
     vector<string> param_var_types;
     vector<Type *> arguments;
     Type *returnType;
+
+    if (*(return_type) != "void" && code_block->has_return_expr() == false) {
+    	logger_class->add("Return type of '" + *(method_name->variable_name) + "' is '" + *return_type + "' but no corresponding return statement found.");
+        return nullptr;
+    }
 
     for (auto param : param_list->parameters_list) {
         if (*(param.first) == "int") {
@@ -235,11 +244,12 @@ Function *MethodDecl::codegen() {
     }
 
     F->eraseFromParent();
+    if (debug == true) cout << "Out codegen of: MethodDecl" << endl << flush;
     return nullptr;
 }
 
 Value *Block::codegen() {
-	cout << "In codegen of: Block" << endl << flush;
+	if (debug == true) cout << "In codegen of: Block" << endl << flush;
 
     Value *V;
     map<string, AllocaInst *> Old_vals;
@@ -257,21 +267,23 @@ Value *Block::codegen() {
     for (auto val: Old_vals) {
     	NamedValues[val.first] = Old_vals[val.first];
     }
+    if (debug == true) cout << "Out codegen of: Block" << endl << flush;
     return V;
 }
 
 Value *StatementList::codegen() {
-	cout << "In codegen of: StatementList" << endl << flush;
+	if (debug == true) cout << "In codegen of: StatementList" << endl << flush;
 
 	Value *v = ConstantInt::get(Context, llvm::APInt(32, 1));
     for (auto statement : statement_list) {
         v = statement->codegen();
     }
+    if (debug == true) cout << "Out codegen of: StatementList" << endl << flush;
 	return v;
 }
 
 Value *AssignStmt::codegen() {
-	cout << "In codegen of: AssignStmt" << endl << flush;
+	if (debug == true) cout << "In codegen of: AssignStmt" << endl << flush;
 
     Value *cur = NamedValues[*(left_part->var_name->variable_name)];
     if (cur == nullptr) {
@@ -284,7 +296,6 @@ Value *AssignStmt::codegen() {
     Value *val = right_part->codegen();
     // Mine
     if (right_part->get_expr_type() == "Location") {
-    	cout << "My Special case" << endl << flush;
     	val = Builder.CreateLoad(val);
     }
 
@@ -302,30 +313,31 @@ Value *AssignStmt::codegen() {
     else if (*op == "-=") {
         val = Builder.CreateSub(cur, val, "subEqualToTmp");
     }
+    if (debug == true) cout << "Out codegen of: AssignStmt" << endl << flush;
     return Builder.CreateStore(val, lhs);
 }
 
 Value *Literal::codegen() {
-	cout << "In codegen of: Literal" << endl << flush;
-	cout << literal_type << endl << flush;
+	if (debug == true) cout << "In codegen of: Literal" << endl << flush;
 	Value *v;
 	if (literal_type == "int") {
-		cout << lit_int << endl << flush;
 	    v = ConstantInt::get(Context, llvm::APInt(32, static_cast<uint64_t>(lit_int)));
+	    // cout << "Int ban gaya! val = " << lit_int << endl << flush;
 	}
 	if (literal_type == "boolean") {
-		cout << lit_bool << endl << flush;
 	    v = ConstantInt::get(Context, llvm::APInt(1, lit_bool));
+	    // cout << "boolean ban gaya! val = " << lit_bool << endl << flush;
 	}
 	if (literal_type == "string") {
-		cout << *lit_string << endl << flush;
 	    v = Builder.CreateGlobalStringPtr(*lit_string);
+	    // cout << "string ban gaya! val = " << lit_string << endl << flush;
 	}
+	if (debug == true) cout << "Out codegen of: Literal" << endl << flush;
     return v;
 }
 
 Value *Location::codegen() {
-	cout << "In codegen of: Location" << endl << flush;
+	if (debug == true) cout << "In codegen of: Location" << endl << flush;
 
     Value *V = NamedValues[*(var_name->variable_name)];
     if (V == nullptr) {
@@ -336,6 +348,7 @@ Value *Location::codegen() {
     	return nullptr;
     }
     if (location_type == "variable") {
+    	if (debug == true) cout << "Out codegen of: Location" << endl << flush;
         return V;
     }
 
@@ -357,13 +370,14 @@ Value *Location::codegen() {
     array_index.push_back(Builder.getInt32(0));
     array_index.push_back(index_val);
     V = Builder.CreateGEP(V, array_index, (*(var_name->variable_name)) + "_Index");
+    if (debug == true) cout << "Out codegen of: Location" << endl << flush;
     return V;
 
     ///////////////////////////////////// UPTIL HERE
 }
 
 Value *IfElseStmt::codegen() {
-	cout << "In codegen of: IfElseStmt" << endl << flush;
+	if (debug == true) cout << "In codegen of: IfElseStmt" << endl << flush;
 
     Value *val_cond = cond->codegen();
     if (val_cond == nullptr) {
@@ -423,11 +437,12 @@ Value *IfElseStmt::codegen() {
     }
 
     Value *V = ConstantInt::get(Context, APInt(32, 0));
+    if (debug == true) cout << "Out codegen of: IfElseStmt" << endl << flush;
     return V;
 }
 
 Value *IfStmt::codegen() {
-	cout << "In codegen of: IfStmt" << endl << flush;
+	if (debug == true) cout << "In codegen of: IfStmt" << endl << flush;
 
 	Value *val_cond = cond->codegen();
     if (val_cond == nullptr) {
@@ -482,11 +497,12 @@ Value *IfStmt::codegen() {
     // }
 
     Value *V = ConstantInt::get(Context, APInt(32, 0));
+    if (debug == true) cout << "Out codegen of: IfStmt" << endl << flush;
     return V;
 }
 
 Value *ForStmt::codegen() {
-	cout << "In codegen of: ForStmt" << endl << flush;
+	if (debug == true) cout << "In codegen of: ForStmt" << endl << flush;
 
     Value *start = start_cond->codegen();
     if (start == nullptr) {
@@ -498,8 +514,19 @@ Value *ForStmt::codegen() {
 
     Function *TheFunction = Builder.GetInsertBlock()->getParent();
 
-    llvm::AllocaInst *Alloca = CreateEntryBlockAlloca(TheFunction, *(loop_var->variable_name), string("int"));
-    Builder.CreateStore(start, Alloca);
+    // Loading the loop variable
+    AllocaInst *Alloca = NamedValues[*(loop_var->variable_name)];
+    if (Alloca == nullptr) {
+        Alloca = (AllocaInst *) TheModule->getGlobalVariable(*(loop_var->variable_name));
+    }
+    if (Alloca == nullptr) {
+    	logger_class->add("Please declare the looping variable '" + *(loop_var->variable_name) + "' - for loop.");
+    	return nullptr;
+    }
+
+    // Creating the loop variable
+    // llvm::AllocaInst *Alloca = CreateEntryBlockAlloca(TheFunction, *(loop_var->variable_name), string("int"));
+    // Builder.CreateStore(start, Alloca);
 
     Value *step_val = ConstantInt::get(Context, APInt(32, 1));
     BasicBlock *pre_header_basic_block = Builder.GetInsertBlock();
@@ -550,23 +577,28 @@ Value *ForStmt::codegen() {
     } else {
         NamedValues.erase(*(loop_var->variable_name));
     }
+
+    loops.pop();
+
     llvm::Value *V = ConstantInt::get(Context, APInt(32, 1));
+    if (debug == true) cout << "Out codegen of: ForStmt" << endl << flush;
     return V;
 }
 
 Value *RetExpr::codegen() {
-	cout << "In codegen of: RetExpr" << endl << flush;
+	if (debug == true) cout << "In codegen of: RetExpr" << endl << flush;
 
     Value *V = expr->codegen();
     if (expr->get_expr_type() == "Location") {
         V = Builder.CreateLoad(V);
     }
     Builder.CreateRet(V);
+    if (debug == true) cout << "Out codegen of: RetExpr" << endl << flush;
     return V;
 }
 
 Value *StringRetBrkContStatement::codegen() {
-	cout << "In codegen of: StringRetBrkContStatement" << endl << flush;
+	if (debug == true) cout << "In codegen of: StringRetBrkContStatement" << endl << flush;
 
 	Value *V;
 	if (*type == "return") {
@@ -574,11 +606,19 @@ Value *StringRetBrkContStatement::codegen() {
 	}
 	else if (*type == "break") {
 		V = ConstantInt::get(Context, llvm::APInt(32, 1));
+		if (loops.size() == 0) {
+			logger_class->add("Invalid 'break' statement - not inside a loop.");
+	    	return nullptr;
+		}
 	    loopInfo *currentLoop = loops.top();
 	    Builder.CreateBr(currentLoop->afterBB);
 	}
 	else if (*type == "continue") {
 		V = ConstantInt::get(Context, llvm::APInt(32, 1));
+		if (loops.size() == 0) {
+			logger_class->add("Invalid 'continue' statement - not inside a loop.");
+	    	return nullptr;
+		}
 	    loopInfo *currentLoop = loops.top();
 	    Expr *condition = nullptr;
 	    string var = currentLoop->loopVariable;
@@ -592,19 +632,15 @@ Value *StringRetBrkContStatement::codegen() {
 	    Builder.CreateCondBr(cond, currentLoop->checkBB, currentLoop->afterBB);
 	}
     
+    if (debug == true) cout << "Out codegen of: StringRetBrkContStatement" << endl << flush;
     return V;
 }
 
 Value *BinaryOpExpression::codegen() {
-	cout << "In codegen of: BinaryOpExpression" << endl << flush;
+	if (debug == true) cout << "In codegen of: BinaryOpExpression" << endl << flush;
 
     Value *value_left = left->codegen();
     Value *value_right = right->codegen();
-
-    cout << "case1" << endl << flush;
-
-    cout << left->get_expr_type() << endl << flush;
-    cout << right->get_expr_type() << endl << flush;
 
     if (left->get_expr_type() == "Location") {
         value_left = Builder.CreateLoad(value_left);
@@ -612,8 +648,6 @@ Value *BinaryOpExpression::codegen() {
     if (right->get_expr_type() == "Location") {
         value_right = Builder.CreateLoad(value_right);
     }
-
-    cout << "case2" << endl << flush;
 
     if (value_left == 0) {
     	logger_class->add("Error in LHS of binary op expression.");
@@ -623,9 +657,6 @@ Value *BinaryOpExpression::codegen() {
     	logger_class->add("Error in RHS of binary op expression.");
     	return nullptr;
     }
-
-    cout << "case3" << endl << flush;
-    // cout << *op << endl << flush;
     
     Value *v = nullptr;
     if (*op == "+") {
@@ -661,11 +692,19 @@ Value *BinaryOpExpression::codegen() {
     else if (*op == "!=") {
         v = Builder.CreateICmpNE(value_left, value_right, "notequalcomparetmp");
     }
+    else if (*op == "&&") {
+        v = Builder.CreateAnd(value_left, value_right, "andcomparetmp");
+    } 
+    else if (*op == "||") {
+        v = Builder.CreateOr(value_left, value_right, "orcomparetmp");
+    }
+
+    if (debug == true) cout << "Out codegen of: BinaryOpExpression" << endl << flush;
     return v;
 }
 
 Value *UnaryOpExpression::codegen() {
-	cout << "In codegen of: UnaryOpExpression" << endl << flush;
+	if (debug == true) cout << "In codegen of: UnaryOpExpression" << endl << flush;
 
     Value *v = expr->codegen();
     if (expr->get_expr_type() == "Location") {
@@ -673,15 +712,17 @@ Value *UnaryOpExpression::codegen() {
     }
 
     if (*op == "-") {
+    	if (debug == true) cout << "Out codegen of: UnaryOpExpression" << endl << flush;
         return Builder.CreateNeg(v, "negtmp");
     } 
     else if (*op == "!") {
+    	if (debug == true) cout << "Out codegen of: UnaryOpExpression" << endl << flush;
         return Builder.CreateNot(v, "nottmp");
     }
 }
 
 Value *MethodCall::codegen() {
-	cout << "In codegen of: MethodCall" << endl << flush;
+	if (debug == true) cout << "In codegen of: MethodCall" << endl << flush;
 
     Function *callee = TheModule->getFunction(*(method_name->variable_name));
     if (callee == nullptr) {
@@ -714,25 +755,27 @@ Value *MethodCall::codegen() {
     std::reverse(Args.begin(), Args.end());
 
     Value *v = Builder.CreateCall(callee, Args);
+    if (debug == true) cout << "Out codegen of: MethodCall" << endl << flush;
     return v;
 }
 
 Value *CalloutCall::codegen() {
-	cout << "In codegen of: CalloutCall" << endl << flush;
+	if (debug == true) cout << "In codegen of: CalloutCall" << endl << flush;
 
 	Value *v = ConstantInt::get(Context, APInt(32, 1));
+	if (debug == true) cout << "Out codegen of: CalloutCall" << endl << flush;
 	return v;
 }
 
 Value *CalloutArgList::codegen() {
-	cout << "In codegen of: CalloutArgList" << endl << flush;
+	if (debug == true) cout << "In codegen of: CalloutArgList" << endl << flush;
 
 	Value *v = ConstantInt::get(Context, APInt(32, 1));
 	return v;
 }
 
 Value *CalloutArg::codegen() {
-	cout << "In codegen of: CalloutArg" << endl << flush;
+	if (debug == true) cout << "In codegen of: CalloutArg" << endl << flush;
 
 	Value *v = ConstantInt::get(Context, APInt(32, 1));
 	return v;

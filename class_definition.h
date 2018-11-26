@@ -89,6 +89,15 @@ typedef union Node YYSTYPE;
 
 #define YYSTYPE_IS_DECLARED 1
 
+class LogErrorClass {
+	public:
+		vector<string> all_errors;
+
+		LogErrorClass() {};
+
+		void add(string);
+};
+
 /* Visitor Classes */
 class ASTVisitor {
 	public:
@@ -153,11 +162,9 @@ class SomeVisitor: public ASTVisitor {
 class SemanticVisitor: public ASTVisitor {
 	public:
 		// Data Structures needed for semantic checking
-		vector< set<class TerminalVariable*> > scope_variables;
-		vector< set<class ArrayTerminalVariable*> > scope_array_variables;
-		vector< string > errors;
+		class LogErrorClass* logger_class;
 
-		SemanticVisitor() ;
+		SemanticVisitor(class LogErrorClass*) ;
 
 		void visit(class Program*);
 		void visit(class BinaryOpExpression*);
@@ -201,7 +208,7 @@ class Program: public BaseAst {
 		Program(class FieldDeclList*, class MethodDeclList*) ;
 
 		void accept(ASTVisitor* v) { v->visit(this); };
-		Value* codegen();
+		Value* codegen(class LogErrorClass*);
 		void print_llvm_ir();
 };
 
@@ -217,6 +224,8 @@ class Expr: public BaseAst {
 class Statement: public BaseAst {
 	public:
 		Statement() {} // Defined Here itself
+
+		virtual string get_statement_type() = 0;
 };
 
 class BinaryOpExpression: public Expr {
@@ -253,6 +262,7 @@ class MethodCall: public Expr, public Statement {
 		MethodCall(class TerminalVariable*, class MethodArgInpList*) ;
 
 		string get_expr_type() { return "MethodCall"; };
+		string get_statement_type() { return "MethodCall"; };
 		void accept(ASTVisitor* v) { v->visit(this); };
 		Value* codegen();
 };
@@ -277,6 +287,7 @@ class CalloutCall: public Expr, public Statement {
 		CalloutCall(string*, class CalloutArgList*) ;
 
 		string get_expr_type() { return "CalloutCall"; };
+		string get_statement_type() { return "CalloutCall"; };
 		void accept(ASTVisitor* v) { v->visit(this); };
 		Value* codegen();
 };
@@ -426,6 +437,7 @@ class StatementList: public BaseAst {
 		StatementList() ;
 
 		bool has_return();
+		bool has_return_expr();
 		void push_back(class Statement*);
 		void accept(ASTVisitor* v) { v->visit(this); };
 		Value* codegen();
@@ -439,6 +451,8 @@ class Block: public Statement {
 		Block(class FieldDeclList*, class StatementList*) ;
 
 		bool has_return();
+		bool has_return_expr();
+		string get_statement_type() { return "Block"; }
 		void accept(ASTVisitor* v) { v->visit(this); };
 		Value* codegen();
 };
@@ -452,6 +466,7 @@ class AssignStmt: public Statement {
 
 		AssignStmt(class Location*, string*, class Expr*) ;
 
+		string get_statement_type() { return "Assign"; }
 		void accept(ASTVisitor* v) { v->visit(this); };
 		Value* codegen();
 };
@@ -465,6 +480,7 @@ class IfElseStmt: public Statement {
 
 		IfElseStmt(class Expr*, class Block*, class Block*) ;
 
+		string get_statement_type() { return "IfElse"; }
 		void accept(ASTVisitor* v) { v->visit(this); };
 		Value* codegen();
 };
@@ -477,6 +493,7 @@ class IfStmt: public Statement {
 
 		IfStmt(class Expr*, class Block*) ;
 
+		string get_statement_type() { return "If"; }
 		void accept(ASTVisitor* v) { v->visit(this); };
 		Value* codegen();
 };
@@ -494,6 +511,7 @@ class ForStmt: public Statement {
 		ForStmt(class TerminalVariable*, class Expr*, class Expr*, class Block*) ;
 		// ForStmt(class ArrayTerminalVariable*, class Expr*, class Expr*, class Block*) ;
 
+		string get_statement_type() { return "For"; }
 		void accept(ASTVisitor* v) { v->visit(this); };
 		Value* codegen();
 };
@@ -505,6 +523,7 @@ class RetExpr: public Statement {
 
 		RetExpr(class Expr*) ;
 
+		string get_statement_type() { return "RetExpr"; }
 		void accept(ASTVisitor* v) { v->visit(this); };
 		Value* codegen();
 };
@@ -515,6 +534,17 @@ class StringRetBrkContStatement: public Statement {
 
 		StringRetBrkContStatement(string*) ;
 
+		string get_statement_type() { 
+			if (*type == "return") {
+				return "Ret"; 
+			}
+			else if (*type == "break") {
+				return "Break";
+			}
+			else if (*type == "continue") {
+				return "Continue";
+			}
+		}
 		void accept(ASTVisitor* v) { v->visit(this); };
 		Value* codegen();
 };
