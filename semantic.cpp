@@ -37,7 +37,7 @@ void SemanticVisitor::visit(class TerminalVariable* node) {
 
 void SemanticVisitor::visit(class ArrayTerminalVariable* node) {
 	if (node->index_type == "int" && node->index_int <= 0) {
-		this->logger_class->add("Array Capacity for '" + *(node->arr_name->variable_name) + "' should be greater than 0.");
+		this->logger_class->add("Array Capacity for '" + *(node->arr_name->variable_name) + "' should be greater than 0.", node->lineno);
 	}
 }
 
@@ -52,7 +52,7 @@ void SemanticVisitor::visit(class MethodDeclList* node) {
 	}
 
 	if (main_defined == false) {
-		this->logger_class->add("Method 'main' not found.");
+		this->logger_class->add("Method 'main' not found.", node->lineno);
 	}
 }
 

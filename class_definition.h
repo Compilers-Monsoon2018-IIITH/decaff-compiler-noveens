@@ -16,6 +16,7 @@
 #include <llvm/ExecutionEngine/GenericValue.h>
 #include <llvm/ExecutionEngine/MCJIT.h>
 #include <llvm/Support/raw_ostream.h>
+#include <llvm/Support/raw_os_ostream.h>
 #include <llvm/Transforms/Scalar.h>
 #include <llvm/Transforms/Scalar/GVN.h>
 
@@ -95,7 +96,7 @@ class LogErrorClass {
 
 		LogErrorClass() {};
 
-		void add(string);
+		void add(string, int);
 };
 
 /* Visitor Classes */
@@ -208,6 +209,7 @@ class Program: public BaseAst {
 		Program(class FieldDeclList*, class MethodDeclList*) ;
 
 		void accept(ASTVisitor* v) { v->visit(this); };
+		int lineno;
 		Value* codegen(class LogErrorClass*);
 		void print_llvm_ir();
 };
@@ -218,6 +220,7 @@ class Expr: public BaseAst {
 		Expr() {} // Defined Here itself
 
 		virtual string get_expr_type() = 0;
+		int lineno;
 };
 
 // Base class
@@ -226,6 +229,7 @@ class Statement: public BaseAst {
 		Statement() {} // Defined Here itself
 
 		virtual string get_statement_type() = 0;
+		int lineno;
 };
 
 class BinaryOpExpression: public Expr {
@@ -238,6 +242,7 @@ class BinaryOpExpression: public Expr {
 
 		string get_expr_type() { return "BinaryOpExpression"; };
 		void accept(ASTVisitor* v) { v->visit(this); };
+		int lineno;
 		Value* codegen();
 };
 
@@ -250,6 +255,7 @@ class UnaryOpExpression: public Expr {
 
 		string get_expr_type() { return "UnaryOpExpression"; };
 		void accept(ASTVisitor* v) { v->visit(this); };
+		int lineno;
 		Value* codegen();
 };
 
@@ -264,6 +270,7 @@ class MethodCall: public Expr, public Statement {
 		string get_expr_type() { return "MethodCall"; };
 		string get_statement_type() { return "MethodCall"; };
 		void accept(ASTVisitor* v) { v->visit(this); };
+		int lineno;
 		Value* codegen();
 };
 
@@ -275,6 +282,7 @@ class MethodArgInpList: public BaseAst {
 
 		void push_back(class Expr*);
 		void accept(ASTVisitor* v) { v->visit(this); };
+		int lineno;
 		// Value* codegen();
 };
 
@@ -289,6 +297,7 @@ class CalloutCall: public Expr, public Statement {
 		string get_expr_type() { return "CalloutCall"; };
 		string get_statement_type() { return "CalloutCall"; };
 		void accept(ASTVisitor* v) { v->visit(this); };
+		int lineno;
 		Value* codegen();
 };
 
@@ -300,7 +309,7 @@ class CalloutArgList: public BaseAst {
 
 		void push_back(class CalloutArg*);
 		void accept(ASTVisitor* v) { v->visit(this); };
-		Value* codegen();
+		int lineno;
 };
 
 class Location: public Expr {
@@ -314,6 +323,7 @@ class Location: public Expr {
 
 		string get_expr_type() { return "Location"; };
 		void accept(ASTVisitor* v) { v->visit(this); };
+		int lineno;
 		Value* codegen();
 };
 
@@ -327,6 +337,7 @@ class CalloutArg: public BaseAst {
 		CalloutArg(string*) ;
 
 		void accept(ASTVisitor* v) { v->visit(this); };
+		int lineno;
 		Value* codegen();
 };
 
@@ -338,6 +349,7 @@ class TerminalVariable: public Expr {
 
 		string get_expr_type() { return "TerminalVariable"; };
 		void accept(ASTVisitor* v) { v->visit(this); };
+		int lineno;
 		// Value* codegen();
 };
 
@@ -354,6 +366,7 @@ class ArrayTerminalVariable: public Expr {
 		string get_expr_type() { return "ArrayTerminalVariable"; };
 		void accept(ASTVisitor* v) { v->visit(this); };
 		int get_length() { return index_int; };
+		int lineno;
 		// Value* codegen();
 };
 
@@ -369,6 +382,7 @@ class FieldDeclList: public BaseAst {
 		
 		void push_back(class VariableList*);
 		void accept(ASTVisitor* v) { v->visit(this); };
+		int lineno;
 		Value* codegen(bool, map<string, AllocaInst *> &);
 };
 
@@ -384,6 +398,7 @@ class VariableList: public BaseAst {
 		void push_back(class ArrayTerminalVariable*);
 		void set_type(string*);
 		void accept(ASTVisitor* v) { v->visit(this); };
+		int lineno;
 		Value* codegen(bool, map<string, AllocaInst *> &);
 };
 
@@ -395,6 +410,7 @@ class MethodDeclList: public BaseAst {
 		
 		void push_back(class MethodDecl*);
 		void accept(ASTVisitor* v) { v->visit(this); };
+		int lineno;
 		Value* codegen();
 };
 
@@ -413,6 +429,7 @@ class MethodDecl: public BaseAst {
 		MethodDecl(string*, class TerminalVariable*, class Block*) ;
 
 		void accept(ASTVisitor* v) { v->visit(this); };
+		int lineno;
 		Function* codegen();
 };
 
@@ -424,6 +441,7 @@ class ParamList: public BaseAst {
 
 		void push_back(string*, class TerminalVariable*);
 		void accept(ASTVisitor* v) { v->visit(this); };
+		int lineno;
 		// Value* codegen();
 };
 
@@ -440,6 +458,7 @@ class StatementList: public BaseAst {
 		bool has_return_expr();
 		void push_back(class Statement*);
 		void accept(ASTVisitor* v) { v->visit(this); };
+		int lineno;
 		Value* codegen();
 };
 
@@ -454,6 +473,7 @@ class Block: public Statement {
 		bool has_return_expr();
 		string get_statement_type() { return "Block"; }
 		void accept(ASTVisitor* v) { v->visit(this); };
+		int lineno;
 		Value* codegen();
 };
 
@@ -468,6 +488,7 @@ class AssignStmt: public Statement {
 
 		string get_statement_type() { return "Assign"; }
 		void accept(ASTVisitor* v) { v->visit(this); };
+		int lineno;
 		Value* codegen();
 };
 
@@ -482,6 +503,7 @@ class IfElseStmt: public Statement {
 
 		string get_statement_type() { return "IfElse"; }
 		void accept(ASTVisitor* v) { v->visit(this); };
+		int lineno;
 		Value* codegen();
 };
 
@@ -495,6 +517,7 @@ class IfStmt: public Statement {
 
 		string get_statement_type() { return "If"; }
 		void accept(ASTVisitor* v) { v->visit(this); };
+		int lineno;
 		Value* codegen();
 };
 
@@ -513,6 +536,7 @@ class ForStmt: public Statement {
 
 		string get_statement_type() { return "For"; }
 		void accept(ASTVisitor* v) { v->visit(this); };
+		int lineno;
 		Value* codegen();
 };
 
@@ -525,6 +549,7 @@ class RetExpr: public Statement {
 
 		string get_statement_type() { return "RetExpr"; }
 		void accept(ASTVisitor* v) { v->visit(this); };
+		int lineno;
 		Value* codegen();
 };
 
@@ -546,6 +571,7 @@ class StringRetBrkContStatement: public Statement {
 			}
 		}
 		void accept(ASTVisitor* v) { v->visit(this); };
+		int lineno;
 		Value* codegen();
 };
 
@@ -561,6 +587,7 @@ class Literal: public Expr {
 
 		string get_expr_type() { return "Literal"; };
 		void accept(ASTVisitor* v) { v->visit(this); };
+		int lineno;
 		Value* codegen();
 };
 

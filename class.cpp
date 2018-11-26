@@ -3,9 +3,12 @@
 
 using namespace std;
 
-void LogErrorClass::add(string err) {
+void LogErrorClass::add(string err, int lineno) {
 	all_errors.push_back(err);
-	cout << "ERROR #" << all_errors.size() << ": " << "\033[1;31m" << err << "\033[0m" << endl;
+	if (all_errors.size() == 1) {
+		cout << "ERROR LIST:" << endl;
+	}
+	cout << "L" << lineno << ": " << "\033[1;31m" << err << "\033[0m" << endl;
 }
 
 // Class-1

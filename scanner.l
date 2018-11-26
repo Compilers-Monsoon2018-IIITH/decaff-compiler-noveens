@@ -6,6 +6,7 @@
 # define YY_DECL extern "C" int yylex()
 extern union Node yylval;
 using namespace std;
+int linenum = 1;
 
 void yyerror (char const *s) {
 	fl_parsed_correct = false;
@@ -16,7 +17,7 @@ void yyerror (char const *s) {
 
 %%
 
-"class"                     { printf("%s", yytext); yylval.lit = new string(yytext, yyleng); return CLASS; }
+"class"                     { printf("L1: %s", yytext); yylval.lit = new string(yytext, yyleng); return CLASS; }
 "Program"                   { printf("%s", yytext); yylval.lit = new string(yytext, yyleng); return PROG; }
 "{"                         { printf("%s", yytext); yylval.lit = new string(yytext, yyleng); return LEFT_CURLY; }
 "}"                         { printf("%s", yytext); yylval.lit = new string(yytext, yyleng); return RIGHT_CURLY; }
@@ -56,13 +57,13 @@ void yyerror (char const *s) {
 ","                         { printf("%s", yytext); yylval.lit = new string(yytext, yyleng); return COMMA; }
 ";"                         { printf("%s", yytext); yylval.lit = new string(yytext, yyleng); return SEMICOLON; }
 "\t"                        { printf("\t"); }
-"\n"                        { printf("\n"); }
+"\n"                        { printf("\nL%d: ", linenum + 1); linenum ++; }
 " "                         { printf(" "); }
-[ "\t"]*"//".*				{ printf("COMMENT: %s", yytext); }
+[ "\t"]*"//".*				{ printf("%s", yytext); }
 (0x)[0-9a-fA-F]+            { printf("%s", yytext); yylval.num = strtol(yytext, 0, 16); return REGEX_HEX; }
 [a-zA-Z_][a-zA-Z_0-9]*      { printf("%s", yytext); yylval.lit = new string(yytext, yyleng); return REGEX_ID; }
 [0-9][0-9]*                 { printf("%s", yytext); yylval.num = strtol(yytext, 0, 10);  return REGEX_DECIMAL; }
-\'[ -~]\'                   { printf("CHAR %s", yytext); yylval.lit = new string(yytext, yyleng); return REGEX_CHAR; } /* FIX THIS */
-\"[ -~]*\"                  { printf("STRING_LIT %s", yytext); yylval.lit = new string(yytext, yyleng); return REGEX_STRING; } /* FIX THIS */
+\'[^,\'\"]\'                { printf("%s", yytext); yylval.lit = new string(yytext + 1, yyleng - 2); return REGEX_CHAR; } /* FIX THIS */
+\"[^,\'\"]*\"               { printf("%s", yytext); yylval.lit = new string(yytext + 1, yyleng - 2); return REGEX_STRING; } /* FIX THIS */
 
 %%

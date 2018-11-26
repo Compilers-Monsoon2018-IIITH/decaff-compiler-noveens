@@ -71,7 +71,7 @@ bool fl_parsed_correct = true;
 extern "C" int yylex();
 extern "C" int yyparse();
 extern "C" FILE *yyin;
-extern "C" int line_num;
+extern int linenum;
 extern union Node yylval;
 extern "C" int errors;
 void yyerror(const char *s);
@@ -1396,13 +1396,13 @@ yyreduce:
     {
         case 2:
 #line 82 "parser.y" /* yacc.c:1646  */
-    { (yyval.Programs) = new Program((yyvsp[-2].FieldDeclLists), (yyvsp[-1].MethodDeclLists)); rootAst = (yyval.Programs); }
+    { (yyval.Programs) = new Program((yyvsp[-2].FieldDeclLists), (yyvsp[-1].MethodDeclLists)); rootAst = (yyval.Programs); (yyval.Programs)->lineno = linenum; }
 #line 1401 "parser.tab.c" /* yacc.c:1646  */
     break;
 
   case 3:
 #line 85 "parser.y" /* yacc.c:1646  */
-    { (yyval.FieldDeclLists) = new FieldDeclList(); }
+    { (yyval.FieldDeclLists) = new FieldDeclList(); (yyval.FieldDeclLists)->lineno = linenum; }
 #line 1407 "parser.tab.c" /* yacc.c:1646  */
     break;
 
@@ -1420,13 +1420,13 @@ yyreduce:
 
   case 6:
 #line 90 "parser.y" /* yacc.c:1646  */
-    { (yyvsp[-1].VariableLists)->push_back(new ArrayTerminalVariable((yyvsp[-5].TerminalVariables), (yyvsp[-3].num))); (yyvsp[-1].VariableLists)->set_type((yyvsp[-6].lit)); (yyval.VariableLists) = (yyvsp[-1].VariableLists); }
+    { (yyvsp[-1].VariableLists)->push_back(new ArrayTerminalVariable((yyvsp[-5].TerminalVariables), (yyvsp[-3].num))); (yyvsp[-1].VariableLists)->set_type((yyvsp[-6].lit)); (yyval.VariableLists) = (yyvsp[-1].VariableLists); (yyval.VariableLists)->lineno = linenum; }
 #line 1425 "parser.tab.c" /* yacc.c:1646  */
     break;
 
   case 7:
 #line 93 "parser.y" /* yacc.c:1646  */
-    { (yyval.VariableLists) = new VariableList(); }
+    { (yyval.VariableLists) = new VariableList(); (yyval.VariableLists)->lineno = linenum; }
 #line 1431 "parser.tab.c" /* yacc.c:1646  */
     break;
 
@@ -1438,13 +1438,13 @@ yyreduce:
 
   case 9:
 #line 95 "parser.y" /* yacc.c:1646  */
-    { (yyval.VariableLists) = (yyvsp[0].VariableLists); (yyval.VariableLists)->push_back(new ArrayTerminalVariable((yyvsp[-4].TerminalVariables), int((yyvsp[-2].num)))); }
+    { (yyval.VariableLists) = (yyvsp[0].VariableLists); (yyval.VariableLists)->push_back(new ArrayTerminalVariable((yyvsp[-4].TerminalVariables), int((yyvsp[-2].num)))); (yyval.VariableLists)->lineno = linenum; }
 #line 1443 "parser.tab.c" /* yacc.c:1646  */
     break;
 
   case 10:
 #line 98 "parser.y" /* yacc.c:1646  */
-    { (yyval.MethodDeclLists) = new MethodDeclList(); }
+    { (yyval.MethodDeclLists) = new MethodDeclList(); (yyval.MethodDeclLists)->lineno = linenum; }
 #line 1449 "parser.tab.c" /* yacc.c:1646  */
     break;
 
@@ -1456,31 +1456,31 @@ yyreduce:
 
   case 12:
 #line 102 "parser.y" /* yacc.c:1646  */
-    { (yyval.MethodDecls) = new MethodDecl((yyvsp[-4].lit), (yyvsp[-3].TerminalVariables), (yyvsp[0].Blocks)); }
+    { (yyval.MethodDecls) = new MethodDecl((yyvsp[-4].lit), (yyvsp[-3].TerminalVariables), (yyvsp[0].Blocks)); (yyval.MethodDecls)->lineno = linenum; }
 #line 1461 "parser.tab.c" /* yacc.c:1646  */
     break;
 
   case 13:
 #line 103 "parser.y" /* yacc.c:1646  */
-    { (yyvsp[-4].ParamLists)->push_back((yyvsp[-3].lit), (yyvsp[-2].TerminalVariables)); (yyval.MethodDecls) = new MethodDecl((yyvsp[-7].lit), (yyvsp[-6].TerminalVariables), (yyvsp[-4].ParamLists), (yyvsp[0].Blocks)); }
+    { (yyvsp[-4].ParamLists)->push_back((yyvsp[-3].lit), (yyvsp[-2].TerminalVariables)); (yyval.MethodDecls) = new MethodDecl((yyvsp[-7].lit), (yyvsp[-6].TerminalVariables), (yyvsp[-4].ParamLists), (yyvsp[0].Blocks)); (yyval.MethodDecls)->lineno = linenum; }
 #line 1467 "parser.tab.c" /* yacc.c:1646  */
     break;
 
   case 14:
 #line 104 "parser.y" /* yacc.c:1646  */
-    { (yyval.MethodDecls) = new MethodDecl((yyvsp[-4].lit), (yyvsp[-3].TerminalVariables), (yyvsp[0].Blocks)); }
+    { (yyval.MethodDecls) = new MethodDecl((yyvsp[-4].lit), (yyvsp[-3].TerminalVariables), (yyvsp[0].Blocks)); (yyval.MethodDecls)->lineno = linenum; }
 #line 1473 "parser.tab.c" /* yacc.c:1646  */
     break;
 
   case 15:
 #line 105 "parser.y" /* yacc.c:1646  */
-    { (yyvsp[-4].ParamLists)->push_back((yyvsp[-3].lit), (yyvsp[-2].TerminalVariables)); (yyval.MethodDecls) = new MethodDecl((yyvsp[-7].lit), (yyvsp[-6].TerminalVariables), (yyvsp[-4].ParamLists), (yyvsp[0].Blocks)); }
+    { (yyvsp[-4].ParamLists)->push_back((yyvsp[-3].lit), (yyvsp[-2].TerminalVariables)); (yyval.MethodDecls) = new MethodDecl((yyvsp[-7].lit), (yyvsp[-6].TerminalVariables), (yyvsp[-4].ParamLists), (yyvsp[0].Blocks)); (yyval.MethodDecls)->lineno = linenum; }
 #line 1479 "parser.tab.c" /* yacc.c:1646  */
     break;
 
   case 16:
 #line 108 "parser.y" /* yacc.c:1646  */
-    { (yyval.ParamLists) = new ParamList(); }
+    { (yyval.ParamLists) = new ParamList(); (yyval.ParamLists)->lineno = linenum; }
 #line 1485 "parser.tab.c" /* yacc.c:1646  */
     break;
 
@@ -1492,13 +1492,13 @@ yyreduce:
 
   case 18:
 #line 112 "parser.y" /* yacc.c:1646  */
-    { (yyval.Blocks) = new Block((yyvsp[-2].FieldDeclLists), (yyvsp[-1].StatementLists)); }
+    { (yyval.Blocks) = new Block((yyvsp[-2].FieldDeclLists), (yyvsp[-1].StatementLists)); (yyval.Blocks)->lineno = linenum; }
 #line 1497 "parser.tab.c" /* yacc.c:1646  */
     break;
 
   case 19:
 #line 115 "parser.y" /* yacc.c:1646  */
-    { (yyval.FieldDeclLists) = new FieldDeclList(); }
+    { (yyval.FieldDeclLists) = new FieldDeclList(); (yyval.FieldDeclLists)->lineno = linenum; }
 #line 1503 "parser.tab.c" /* yacc.c:1646  */
     break;
 
@@ -1510,7 +1510,7 @@ yyreduce:
 
   case 21:
 #line 119 "parser.y" /* yacc.c:1646  */
-    { (yyval.VariableLists) = new VariableList(); }
+    { (yyval.VariableLists) = new VariableList(); (yyval.VariableLists)->lineno = linenum; }
 #line 1515 "parser.tab.c" /* yacc.c:1646  */
     break;
 
@@ -1522,7 +1522,7 @@ yyreduce:
 
   case 23:
 #line 123 "parser.y" /* yacc.c:1646  */
-    { (yyval.StatementLists) = new StatementList(); }
+    { (yyval.StatementLists) = new StatementList(); (yyval.StatementLists)->lineno = linenum; }
 #line 1527 "parser.tab.c" /* yacc.c:1646  */
     break;
 
@@ -1546,7 +1546,7 @@ yyreduce:
 
   case 27:
 #line 131 "parser.y" /* yacc.c:1646  */
-    { (yyval.Statements) = new AssignStmt((yyvsp[-3].Locations), (yyvsp[-2].lit), (yyvsp[-1].Exprs)); }
+    { (yyval.Statements) = new AssignStmt((yyvsp[-3].Locations), (yyvsp[-2].lit), (yyvsp[-1].Exprs)); (yyval.Statements)->lineno = linenum; }
 #line 1551 "parser.tab.c" /* yacc.c:1646  */
     break;
 
@@ -1564,43 +1564,43 @@ yyreduce:
 
   case 30:
 #line 134 "parser.y" /* yacc.c:1646  */
-    { (yyval.Statements) = new IfElseStmt((yyvsp[-4].Exprs), (yyvsp[-2].Blocks), (yyvsp[0].Blocks)); }
+    { (yyval.Statements) = new IfElseStmt((yyvsp[-4].Exprs), (yyvsp[-2].Blocks), (yyvsp[0].Blocks)); (yyval.Statements)->lineno = linenum; }
 #line 1569 "parser.tab.c" /* yacc.c:1646  */
     break;
 
   case 31:
 #line 135 "parser.y" /* yacc.c:1646  */
-    { (yyval.Statements) = new IfStmt((yyvsp[-2].Exprs), (yyvsp[0].Blocks)); }
+    { (yyval.Statements) = new IfStmt((yyvsp[-2].Exprs), (yyvsp[0].Blocks)); (yyval.Statements)->lineno = linenum; }
 #line 1575 "parser.tab.c" /* yacc.c:1646  */
     break;
 
   case 32:
 #line 136 "parser.y" /* yacc.c:1646  */
-    { (yyval.Statements) = new ForStmt((yyvsp[-5].TerminalVariables), (yyvsp[-3].Exprs), (yyvsp[-1].Exprs), (yyvsp[0].Blocks)); }
+    { (yyval.Statements) = new ForStmt((yyvsp[-5].TerminalVariables), (yyvsp[-3].Exprs), (yyvsp[-1].Exprs), (yyvsp[0].Blocks)); (yyval.Statements)->lineno = linenum; }
 #line 1581 "parser.tab.c" /* yacc.c:1646  */
     break;
 
   case 33:
 #line 137 "parser.y" /* yacc.c:1646  */
-    { (yyval.Statements) = new RetExpr((yyvsp[-1].Exprs)); }
+    { (yyval.Statements) = new RetExpr((yyvsp[-1].Exprs)); (yyval.Statements)->lineno = linenum; }
 #line 1587 "parser.tab.c" /* yacc.c:1646  */
     break;
 
   case 34:
 #line 138 "parser.y" /* yacc.c:1646  */
-    { (yyval.Statements) = new StringRetBrkContStatement((yyvsp[-1].lit)); }
+    { (yyval.Statements) = new StringRetBrkContStatement((yyvsp[-1].lit)); (yyval.Statements)->lineno = linenum; }
 #line 1593 "parser.tab.c" /* yacc.c:1646  */
     break;
 
   case 35:
 #line 139 "parser.y" /* yacc.c:1646  */
-    { (yyval.Statements) = new StringRetBrkContStatement((yyvsp[-1].lit)); }
+    { (yyval.Statements) = new StringRetBrkContStatement((yyvsp[-1].lit)); (yyval.Statements)->lineno = linenum; }
 #line 1599 "parser.tab.c" /* yacc.c:1646  */
     break;
 
   case 36:
 #line 140 "parser.y" /* yacc.c:1646  */
-    { (yyval.Statements) = new StringRetBrkContStatement((yyvsp[-1].lit)); }
+    { (yyval.Statements) = new StringRetBrkContStatement((yyvsp[-1].lit)); (yyval.Statements)->lineno = linenum; }
 #line 1605 "parser.tab.c" /* yacc.c:1646  */
     break;
 
@@ -1630,31 +1630,31 @@ yyreduce:
 
   case 41:
 #line 149 "parser.y" /* yacc.c:1646  */
-    { (yyval.MethodCalls) = new MethodCall((yyvsp[-2].TerminalVariables)); }
+    { (yyval.MethodCalls) = new MethodCall((yyvsp[-2].TerminalVariables)); (yyval.MethodCalls)->lineno = linenum; }
 #line 1635 "parser.tab.c" /* yacc.c:1646  */
     break;
 
   case 42:
 #line 150 "parser.y" /* yacc.c:1646  */
-    { (yyvsp[-2].MethodArgInpLists)->push_back((yyvsp[-1].Exprs)); (yyval.MethodCalls) = new MethodCall((yyvsp[-4].TerminalVariables), (yyvsp[-2].MethodArgInpLists)); }
+    { (yyvsp[-2].MethodArgInpLists)->push_back((yyvsp[-1].Exprs)); (yyval.MethodCalls) = new MethodCall((yyvsp[-4].TerminalVariables), (yyvsp[-2].MethodArgInpLists)); (yyval.MethodCalls)->lineno = linenum; }
 #line 1641 "parser.tab.c" /* yacc.c:1646  */
     break;
 
   case 43:
 #line 153 "parser.y" /* yacc.c:1646  */
-    { (yyval.CalloutCalls) = new CalloutCall((yyvsp[-1].lit)); }
+    { (yyval.CalloutCalls) = new CalloutCall((yyvsp[-1].lit)); (yyval.CalloutCalls)->lineno = linenum; }
 #line 1647 "parser.tab.c" /* yacc.c:1646  */
     break;
 
   case 44:
 #line 154 "parser.y" /* yacc.c:1646  */
-    { (yyvsp[-2].CalloutArgLists)->push_back((yyvsp[-1].CalloutArgs)); (yyval.CalloutCalls) = new CalloutCall((yyvsp[-4].lit), (yyvsp[-2].CalloutArgLists)); }
+    { (yyvsp[-2].CalloutArgLists)->push_back((yyvsp[-1].CalloutArgs)); (yyval.CalloutCalls) = new CalloutCall((yyvsp[-4].lit), (yyvsp[-2].CalloutArgLists)); (yyval.CalloutCalls)->lineno = linenum; }
 #line 1653 "parser.tab.c" /* yacc.c:1646  */
     break;
 
   case 45:
 #line 157 "parser.y" /* yacc.c:1646  */
-    { (yyval.MethodArgInpLists) = new MethodArgInpList(); }
+    { (yyval.MethodArgInpLists) = new MethodArgInpList(); (yyval.MethodArgInpLists)->lineno = linenum; }
 #line 1659 "parser.tab.c" /* yacc.c:1646  */
     break;
 
@@ -1666,7 +1666,7 @@ yyreduce:
 
   case 47:
 #line 161 "parser.y" /* yacc.c:1646  */
-    { (yyval.CalloutArgLists) = new CalloutArgList(); }
+    { (yyval.CalloutArgLists) = new CalloutArgList(); (yyval.CalloutArgLists)->lineno = linenum; }
 #line 1671 "parser.tab.c" /* yacc.c:1646  */
     break;
 
@@ -1684,13 +1684,13 @@ yyreduce:
 
   case 50:
 #line 168 "parser.y" /* yacc.c:1646  */
-    { (yyval.Locations) = new Location((yyvsp[0].TerminalVariables)); }
+    { (yyval.Locations) = new Location((yyvsp[0].TerminalVariables)); (yyval.Locations)->lineno = linenum; }
 #line 1689 "parser.tab.c" /* yacc.c:1646  */
     break;
 
   case 51:
 #line 169 "parser.y" /* yacc.c:1646  */
-    { (yyval.Locations) = new Location((yyvsp[-3].TerminalVariables), (yyvsp[-1].Exprs)); }
+    { (yyval.Locations) = new Location((yyvsp[-3].TerminalVariables), (yyvsp[-1].Exprs)); (yyval.Locations)->lineno = linenum; }
 #line 1695 "parser.tab.c" /* yacc.c:1646  */
     break;
 
@@ -1720,91 +1720,91 @@ yyreduce:
 
   case 56:
 #line 176 "parser.y" /* yacc.c:1646  */
-    { (yyval.Exprs) = new BinaryOpExpression((yyvsp[-2].Exprs), (yyvsp[-1].lit), (yyvsp[0].Exprs)); }
+    { (yyval.Exprs) = new BinaryOpExpression((yyvsp[-2].Exprs), (yyvsp[-1].lit), (yyvsp[0].Exprs)); (yyval.Exprs)->lineno = linenum; }
 #line 1725 "parser.tab.c" /* yacc.c:1646  */
     break;
 
   case 57:
 #line 177 "parser.y" /* yacc.c:1646  */
-    { (yyval.Exprs) = new BinaryOpExpression((yyvsp[-2].Exprs), (yyvsp[-1].lit), (yyvsp[0].Exprs)); }
+    { (yyval.Exprs) = new BinaryOpExpression((yyvsp[-2].Exprs), (yyvsp[-1].lit), (yyvsp[0].Exprs)); (yyval.Exprs)->lineno = linenum; }
 #line 1731 "parser.tab.c" /* yacc.c:1646  */
     break;
 
   case 58:
 #line 178 "parser.y" /* yacc.c:1646  */
-    { (yyval.Exprs) = new BinaryOpExpression((yyvsp[-2].Exprs), (yyvsp[-1].lit), (yyvsp[0].Exprs)); }
+    { (yyval.Exprs) = new BinaryOpExpression((yyvsp[-2].Exprs), (yyvsp[-1].lit), (yyvsp[0].Exprs)); (yyval.Exprs)->lineno = linenum; }
 #line 1737 "parser.tab.c" /* yacc.c:1646  */
     break;
 
   case 59:
 #line 179 "parser.y" /* yacc.c:1646  */
-    { (yyval.Exprs) = new BinaryOpExpression((yyvsp[-2].Exprs), (yyvsp[-1].lit), (yyvsp[0].Exprs)); }
+    { (yyval.Exprs) = new BinaryOpExpression((yyvsp[-2].Exprs), (yyvsp[-1].lit), (yyvsp[0].Exprs)); (yyval.Exprs)->lineno = linenum; }
 #line 1743 "parser.tab.c" /* yacc.c:1646  */
     break;
 
   case 60:
 #line 180 "parser.y" /* yacc.c:1646  */
-    { (yyval.Exprs) = new BinaryOpExpression((yyvsp[-2].Exprs), (yyvsp[-1].lit), (yyvsp[0].Exprs)); }
+    { (yyval.Exprs) = new BinaryOpExpression((yyvsp[-2].Exprs), (yyvsp[-1].lit), (yyvsp[0].Exprs)); (yyval.Exprs)->lineno = linenum; }
 #line 1749 "parser.tab.c" /* yacc.c:1646  */
     break;
 
   case 61:
 #line 181 "parser.y" /* yacc.c:1646  */
-    { (yyval.Exprs) = new BinaryOpExpression((yyvsp[-2].Exprs), (yyvsp[-1].lit), (yyvsp[0].Exprs)); }
+    { (yyval.Exprs) = new BinaryOpExpression((yyvsp[-2].Exprs), (yyvsp[-1].lit), (yyvsp[0].Exprs)); (yyval.Exprs)->lineno = linenum; }
 #line 1755 "parser.tab.c" /* yacc.c:1646  */
     break;
 
   case 62:
 #line 182 "parser.y" /* yacc.c:1646  */
-    { (yyval.Exprs) = new BinaryOpExpression((yyvsp[-2].Exprs), (yyvsp[-1].lit), (yyvsp[0].Exprs)); }
+    { (yyval.Exprs) = new BinaryOpExpression((yyvsp[-2].Exprs), (yyvsp[-1].lit), (yyvsp[0].Exprs)); (yyval.Exprs)->lineno = linenum; }
 #line 1761 "parser.tab.c" /* yacc.c:1646  */
     break;
 
   case 63:
 #line 183 "parser.y" /* yacc.c:1646  */
-    { (yyval.Exprs) = new BinaryOpExpression((yyvsp[-2].Exprs), (yyvsp[-1].lit), (yyvsp[0].Exprs)); }
+    { (yyval.Exprs) = new BinaryOpExpression((yyvsp[-2].Exprs), (yyvsp[-1].lit), (yyvsp[0].Exprs)); (yyval.Exprs)->lineno = linenum; }
 #line 1767 "parser.tab.c" /* yacc.c:1646  */
     break;
 
   case 64:
 #line 184 "parser.y" /* yacc.c:1646  */
-    { (yyval.Exprs) = new BinaryOpExpression((yyvsp[-2].Exprs), (yyvsp[-1].lit), (yyvsp[0].Exprs)); }
+    { (yyval.Exprs) = new BinaryOpExpression((yyvsp[-2].Exprs), (yyvsp[-1].lit), (yyvsp[0].Exprs)); (yyval.Exprs)->lineno = linenum; }
 #line 1773 "parser.tab.c" /* yacc.c:1646  */
     break;
 
   case 65:
 #line 185 "parser.y" /* yacc.c:1646  */
-    { (yyval.Exprs) = new BinaryOpExpression((yyvsp[-2].Exprs), (yyvsp[-1].lit), (yyvsp[0].Exprs)); }
+    { (yyval.Exprs) = new BinaryOpExpression((yyvsp[-2].Exprs), (yyvsp[-1].lit), (yyvsp[0].Exprs)); (yyval.Exprs)->lineno = linenum; }
 #line 1779 "parser.tab.c" /* yacc.c:1646  */
     break;
 
   case 66:
 #line 186 "parser.y" /* yacc.c:1646  */
-    { (yyval.Exprs) = new BinaryOpExpression((yyvsp[-2].Exprs), (yyvsp[-1].lit), (yyvsp[0].Exprs)); }
+    { (yyval.Exprs) = new BinaryOpExpression((yyvsp[-2].Exprs), (yyvsp[-1].lit), (yyvsp[0].Exprs)); (yyval.Exprs)->lineno = linenum; }
 #line 1785 "parser.tab.c" /* yacc.c:1646  */
     break;
 
   case 67:
 #line 187 "parser.y" /* yacc.c:1646  */
-    { (yyval.Exprs) = new BinaryOpExpression((yyvsp[-2].Exprs), (yyvsp[-1].lit), (yyvsp[0].Exprs)); }
+    { (yyval.Exprs) = new BinaryOpExpression((yyvsp[-2].Exprs), (yyvsp[-1].lit), (yyvsp[0].Exprs)); (yyval.Exprs)->lineno = linenum; }
 #line 1791 "parser.tab.c" /* yacc.c:1646  */
     break;
 
   case 68:
 #line 188 "parser.y" /* yacc.c:1646  */
-    { (yyval.Exprs) = new BinaryOpExpression((yyvsp[-2].Exprs), (yyvsp[-1].lit), (yyvsp[0].Exprs)); }
+    { (yyval.Exprs) = new BinaryOpExpression((yyvsp[-2].Exprs), (yyvsp[-1].lit), (yyvsp[0].Exprs)); (yyval.Exprs)->lineno = linenum; }
 #line 1797 "parser.tab.c" /* yacc.c:1646  */
     break;
 
   case 69:
 #line 189 "parser.y" /* yacc.c:1646  */
-    { (yyval.Exprs) = new UnaryOpExpression((yyvsp[-1].lit), (yyvsp[0].Exprs)); }
+    { (yyval.Exprs) = new UnaryOpExpression((yyvsp[-1].lit), (yyvsp[0].Exprs)); (yyval.Exprs)->lineno = linenum; }
 #line 1803 "parser.tab.c" /* yacc.c:1646  */
     break;
 
   case 70:
 #line 190 "parser.y" /* yacc.c:1646  */
-    { (yyval.Exprs) = new UnaryOpExpression((yyvsp[-1].lit), (yyvsp[0].Exprs)); }
+    { (yyval.Exprs) = new UnaryOpExpression((yyvsp[-1].lit), (yyvsp[0].Exprs)); (yyval.Exprs)->lineno = linenum; }
 #line 1809 "parser.tab.c" /* yacc.c:1646  */
     break;
 
@@ -1816,37 +1816,37 @@ yyreduce:
 
   case 72:
 #line 194 "parser.y" /* yacc.c:1646  */
-    { (yyval.CalloutArgs) = new CalloutArg((yyvsp[0].Exprs)); }
+    { (yyval.CalloutArgs) = new CalloutArg((yyvsp[0].Exprs)); (yyval.CalloutArgs)->lineno = linenum; }
 #line 1821 "parser.tab.c" /* yacc.c:1646  */
     break;
 
   case 73:
 #line 195 "parser.y" /* yacc.c:1646  */
-    { (yyval.CalloutArgs) = new CalloutArg((yyvsp[0].lit)); }
+    { (yyval.CalloutArgs) = new CalloutArg((yyvsp[0].lit)); (yyval.CalloutArgs)->lineno = linenum; }
 #line 1827 "parser.tab.c" /* yacc.c:1646  */
     break;
 
   case 74:
 #line 198 "parser.y" /* yacc.c:1646  */
-    { (yyval.Literals) = new Literal((yyvsp[0].num)); }
+    { (yyval.Literals) = new Literal((yyvsp[0].num)); (yyval.Literals)->lineno = linenum; }
 #line 1833 "parser.tab.c" /* yacc.c:1646  */
     break;
 
   case 75:
 #line 199 "parser.y" /* yacc.c:1646  */
-    { (yyval.Literals) = new Literal((yyvsp[0].lit)); }
+    { (yyval.Literals) = new Literal((yyvsp[0].lit)); (yyval.Literals)->lineno = linenum; }
 #line 1839 "parser.tab.c" /* yacc.c:1646  */
     break;
 
   case 76:
 #line 200 "parser.y" /* yacc.c:1646  */
-    { (yyval.Literals) = new Literal((yyvsp[0].lit)); }
+    { (yyval.Literals) = new Literal((yyvsp[0].lit)); (yyval.Literals)->lineno = linenum; }
 #line 1845 "parser.tab.c" /* yacc.c:1646  */
     break;
 
   case 77:
 #line 203 "parser.y" /* yacc.c:1646  */
-    { (yyval.TerminalVariables) = new TerminalVariable((yyvsp[0].lit)); }
+    { (yyval.TerminalVariables) = new TerminalVariable((yyvsp[0].lit)); (yyval.TerminalVariables)->lineno = linenum; }
 #line 1851 "parser.tab.c" /* yacc.c:1646  */
     break;
 
