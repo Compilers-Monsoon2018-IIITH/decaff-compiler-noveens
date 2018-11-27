@@ -1,0 +1,67 @@
+; ModuleID = 'Compiler for decaf'
+source_filename = "Compiler for decaf"
+
+@arr = global [100 x i32] zeroinitializer
+@a = global i32 0
+@b = global i32 0
+@c = global i32 0
+@0 = private unnamed_addr constant [31 x i8] c"n = %d and i = %d and tmp = %d\00"
+@1 = private unnamed_addr constant [11 x i8] c"i = %d\5Cr\5Cn\00"
+
+define i32 @temp(i32 %aa) {
+entry:
+  %aaa = alloca i32
+  %aa1 = alloca i32
+  store i32 %aa, i32* %aa1
+  store i32 0, i32* %aaa
+  %0 = load i32, i32* %aa1
+  ret i32 %0
+  ret i32 %0
+}
+
+define i32 @main() {
+entry:
+  %aa = alloca i32
+  %tmp = alloca i1
+  %n = alloca i32
+  %i = alloca i32
+  %a = alloca i32
+  store i32 0, i32* %a
+  store i32 0, i32* %i
+  store i32 0, i32* %n
+  store i1 false, i1* %tmp
+  %0 = load i32, i32* %i
+  %subtmp = sub i32 %0, 2
+  %1 = load i32, i32* %n
+  store i32 %subtmp, i32* %n
+  %2 = load i32, i32* %n
+  %addEqualToTmp = add i32 %2, 5
+  store i32 %addEqualToTmp, i32* %n
+  %3 = load i32, i32* %n
+  %gtcomparetmp = icmp sgt i32 %3, 0
+  %4 = load i1, i1* %tmp
+  store i1 %gtcomparetmp, i1* %tmp
+  %5 = load i32, i32* %n
+  %6 = load i32, i32* %i
+  %7 = load i1, i1* %tmp
+  %8 = call i32 @printf(i8* getelementptr inbounds ([31 x i8], [31 x i8]* @0, i32 0, i32 0), i32 %5, i32 %6, i1 %7)
+  %9 = call i32 @temp(i32 2)
+  br label %loop
+
+loop:                                             ; preds = %loop, %entry
+  %i1 = phi i32 [ %9, %entry ], [ %NextVal, %loop ]
+  store i32 0, i32* %aa
+  %10 = load i32, i32* %i
+  %11 = call i32 bitcast (i32 (i8*, i32, i32, i1)* @printf to i32 (i8*, i32)*)(i8* getelementptr inbounds ([11 x i8], [11 x i8]* @1, i32 0, i32 0), i32 %10)
+  %i2 = load i32, i32* %i
+  %NextVal = add i32 %i2, 1
+  store i32 %NextVal, i32* %i
+  %loopcondition = icmp slt i32 %NextVal, 5
+  br i1 %loopcondition, label %loop, label %afterloop
+
+afterloop:                                        ; preds = %loop
+  ret i32 0
+  ret i32 0
+}
+
+declare i32 @printf(i8*, i32, i32, i1)

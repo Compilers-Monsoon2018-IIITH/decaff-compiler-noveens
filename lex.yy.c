@@ -1073,7 +1073,7 @@ case 48:
 /* rule 48 can match eol */
 YY_RULE_SETUP
 #line 67 "scanner.l"
-{ printf("%s", yytext); yylval.lit = new string(yytext + 1, yyleng - 2); return REGEX_STRING; } /* FIX THIS */
+{ printf("STRING_LIT: %s ENDS", yytext); yylval.lit = new string(yytext + 1, yyleng - 2); return REGEX_STRING; } /* FIX THIS */
 	YY_BREAK
 case 49:
 YY_RULE_SETUP

@@ -30,7 +30,12 @@ string debug_info() {
 }
 
 void Program::print_llvm_ir() {
+	// error_code OutErrorInfo;
+	// raw_fd_ostream stream(llvm::StringRef("llvm_ir.txt"), OutErrorInfo, llvm::sys::fs::F_None);
 	TheModule->print(llvm::errs(), nullptr);
+	// TheModule->print(stream, nullptr);
+	// llvm::errs() << "llvm_ir.txt";
+	// TheModule->dump();
 }
 
 AllocaInst *CreateEntryBlockAlloca(Function *TheFunction, string VarName, string type) {
@@ -725,6 +730,7 @@ Value *ForStmt::codegen() {
 	    	call_stack_size --;
 	    	cout << debug_info() << "Out codegen of: ForStmt" << endl << flush;
 	    }
+	    logger_class->add("start error - i don't know.", this->lineno);
         return nullptr;
     }
     if (start_cond->get_expr_type() == "Location") {

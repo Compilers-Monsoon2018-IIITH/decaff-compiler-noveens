@@ -64,6 +64,6 @@ void yyerror (char const *s) {
 [a-zA-Z_][a-zA-Z_0-9]*      { printf("%s", yytext); yylval.lit = new string(yytext, yyleng); return REGEX_ID; }
 [0-9][0-9]*                 { printf("%s", yytext); yylval.num = strtol(yytext, 0, 10);  return REGEX_DECIMAL; }
 \'[^,\'\"]\'                { printf("%s", yytext); yylval.lit = new string(yytext + 1, yyleng - 2); return REGEX_CHAR; } /* FIX THIS */
-\"[^,\'\"]*\"               { printf("%s", yytext); yylval.lit = new string(yytext + 1, yyleng - 2); return REGEX_STRING; } /* FIX THIS */
+\"[^,\'\"]*\"               { printf("STRING_LIT: %s ENDS", yytext); yylval.lit = new string(yytext + 1, yyleng - 2); return REGEX_STRING; } /* FIX THIS */
 
 %%
