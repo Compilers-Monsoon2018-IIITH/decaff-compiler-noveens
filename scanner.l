@@ -15,6 +15,8 @@ void yyerror (char const *s) {
 
 %}
 
+reg 						[\x20\x21\x23-\x26\x28-\x5b\x5d-\x7e]|\\[\'\"\\]
+
 %%
 
 "class"                     { printf("L1: %s", yytext); yylval.lit = new string(yytext, yyleng); return CLASS; }
@@ -63,7 +65,7 @@ void yyerror (char const *s) {
 (0x)[0-9a-fA-F]+            { printf("%s", yytext); yylval.num = strtol(yytext, 0, 16); return REGEX_HEX; }
 [a-zA-Z_][a-zA-Z_0-9]*      { printf("%s", yytext); yylval.lit = new string(yytext, yyleng); return REGEX_ID; }
 [0-9][0-9]*                 { printf("%s", yytext); yylval.num = strtol(yytext, 0, 10);  return REGEX_DECIMAL; }
-\'[^,\'\"]\'                { printf("%s", yytext); yylval.lit = new string(yytext + 1, yyleng - 2); return REGEX_CHAR; } /* FIX THIS */
-\"[^,\'\"]*\"               { printf("STRING_LIT: %s ENDS", yytext); yylval.lit = new string(yytext + 1, yyleng - 2); return REGEX_STRING; } /* FIX THIS */
+\'{reg}\'                   { printf("%s", yytext); yylval.lit = new string(yytext + 1, yyleng - 2); return REGEX_CHAR; } /* FIX THIS */
+\"{reg}*\"                  { printf("%s", yytext); yylval.lit = new string(yytext + 1, yyleng - 2); return REGEX_STRING; } /* FIX THIS */
 
 %%

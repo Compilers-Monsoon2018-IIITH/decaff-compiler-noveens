@@ -258,14 +258,15 @@ Function *MethodDecl::codegen() {
     vector<Type *> arguments;
     Type *returnType;
 
-    if (*(return_type) != "void" && code_block->has_return_expr() == false) {
-    	logger_class->add("Return type of '" + *(method_name->variable_name) + "' is '" + *return_type + "' but no corresponding return statement found.", this->lineno);
-        if (debug == true) {
-	    	call_stack_size --;
-	    	cout << debug_info() << "Out codegen of: MethodDecl" << endl << flush;
-	    }
-        return nullptr;
-    }
+    // Semantic
+    // if (*(return_type) != "void" && code_block->has_return_expr() == false) {
+    // 	logger_class->add("Return type of '" + *(method_name->variable_name) + "' is '" + *return_type + "' but no corresponding return statement found.", this->lineno);
+    //     if (debug == true) {
+	   //  	call_stack_size --;
+	   //  	cout << debug_info() << "Out codegen of: MethodDecl" << endl << flush;
+	   //  }
+    //     return nullptr;
+    // }
 
     for (auto param : param_list->parameters_list) {
         if (*(param.first) == "int") {
@@ -342,10 +343,10 @@ Function *MethodDecl::codegen() {
     }
 
     if (RetVal) {
-        if (*(return_type) != "void")
-            Builder.CreateRet(RetVal);
-        else
-            Builder.CreateRetVoid();
+        // if (*(return_type) != "void")
+            // Builder.CreateRet(RetVal);
+        // else
+            // Builder.CreateRetVoid();
         
         verifyFunction(*F);
         if (debug == true) {
@@ -664,7 +665,7 @@ Value *IfStmt::codegen() {
     
     bool ret_if = if_block->has_return();
     
-    // Builder.CreateCondBr(val_cond, ifBlock, otherBlock);
+    Builder.CreateCondBr(val_cond, ifBlock, nextBlock);
     Builder.SetInsertPoint(ifBlock);
 
     Value *if_val = if_block->codegen();
@@ -723,6 +724,23 @@ Value *ForStmt::codegen() {
 		call_stack_size ++;
 	}
 	// call_stack.push("ForStmt");
+	
+	// Checking if the loop var is redeclared
+	if (NamedValues.find(*(loop_var->variable_name)) != NamedValues.end()) {
+		if (debug == true) {
+	    	call_stack_size --;
+	    	cout << debug_info() << "Out codegen of: ForStmt" << endl << flush;
+	    }
+	    logger_class->add("Loop variable '" + (*(loop_var->variable_name)) + "' is redeclared.", this->lineno);
+        return nullptr;
+	}
+
+    Function *TheFunction = Builder.GetInsertBlock()->getParent();
+    
+    // Creating the loop variable
+    llvm::AllocaInst *Alloca = CreateEntryBlockAlloca(TheFunction, *(loop_var->variable_name), string("int"));
+    llvm::AllocaInst *OldVal = NamedValues[*(loop_var->variable_name)];
+    NamedValues[*(loop_var->variable_name)] = Alloca;
 
     Value *start = start_cond->codegen();
     if (start == nullptr) {
@@ -737,35 +755,36 @@ Value *ForStmt::codegen() {
         start = Builder.CreateLoad(start);
     }
 
-    Function *TheFunction = Builder.GetInsertBlock()->getParent();
-
-    // Loading the loop variable
-    AllocaInst *Alloca = NamedValues[*(loop_var->variable_name)];
-    if (Alloca == nullptr) {
-        Alloca = (AllocaInst *) TheModule->getGlobalVariable(*(loop_var->variable_name));
-    }
-    if (Alloca == nullptr) {
-    	logger_class->add("Please declare the looping variable '" + *(loop_var->variable_name) + "' - for loop.", this->lineno);
-    	if (debug == true) {
-	    	call_stack_size --;
-	    	cout << debug_info() << "Out codegen of: ForStmt" << endl << flush;
-	    }
-    	return nullptr;
-    }
-
-    // Creating the loop variable
-    // llvm::AllocaInst *Alloca = CreateEntryBlockAlloca(TheFunction, *(loop_var->variable_name), string("int"));
-    // Builder.CreateStore(start, Alloca);
+    // Loop var
+    Builder.CreateStore(start, Alloca);
 
     Value *step_val = ConstantInt::get(Context, APInt(32, 1));
     BasicBlock *pre_header_basic_block = Builder.GetInsertBlock();
+
+    BasicBlock *beforeBB = BasicBlock::Create(Context, "beforeloop", TheFunction);
     BasicBlock *loop_body = BasicBlock::Create(Context, "loop", TheFunction);
     BasicBlock *afterBB = BasicBlock::Create(Context, "afterloop", TheFunction);
-    Builder.CreateBr(loop_body);
-    Builder.SetInsertPoint(loop_body);
+
+    Builder.CreateBr(beforeBB);
+    Builder.SetInsertPoint(beforeBB);
 
     PHINode *Variable = Builder.CreatePHI(Type::getInt32Ty(Context), 2, *(loop_var->variable_name));
     Variable->addIncoming(start, pre_header_basic_block);
+
+    // Loading the loop variable
+    // AllocaInst *Alloca = NamedValues[*(loop_var->variable_name)];
+    // if (Alloca == nullptr) {
+    //     Alloca = (AllocaInst *) TheModule->getGlobalVariable(*(loop_var->variable_name));
+    // }
+    // if (Alloca == nullptr) {
+    // 	logger_class->add("Please declare the looping variable '" + *(loop_var->variable_name) + "' - for loop.", this->lineno);
+    // 	if (debug == true) {
+	   //  	call_stack_size --;
+	   //  	cout << debug_info() << "Out codegen of: ForStmt" << endl << flush;
+	   //  }
+    // 	return nullptr;
+    // }
+    // Builder.CreateStore(start, Alloca);
     
     Value *cond = right_cond->codegen();
     if (cond == nullptr) {
@@ -781,6 +800,7 @@ Value *ForStmt::codegen() {
         cond = Builder.CreateLoad(cond);
     }
     
+    // Pushing to the loop stack
     auto loop_struct = new loopInfo();
     loop_struct->afterBB = afterBB;
     loop_struct->checkBB = loop_body;
@@ -788,9 +808,9 @@ Value *ForStmt::codegen() {
     loop_struct->loopVariable = *(loop_var->variable_name);
     loop_struct->phiVariable = Variable;
     loops.push(loop_struct);
-    
-    llvm::AllocaInst *OldVal = NamedValues[*(loop_var->variable_name)];
-    NamedValues[*(loop_var->variable_name)] = Alloca;
+
+    Builder.CreateCondBr(cond, loop_body, afterBB);
+    Builder.SetInsertPoint(loop_body);
 
     if (code_block->codegen() == nullptr) {
     	if (debug == true) {
@@ -800,14 +820,18 @@ Value *ForStmt::codegen() {
         return nullptr;
     }
 
-    Value *cur = Builder.CreateLoad(Alloca, *(loop_var->variable_name));
+    // Value *cur = Builder.CreateLoad(Alloca, *(loop_var->variable_name));
+    Value *cur = Variable;
     Value *next_val = Builder.CreateAdd(cur, step_val, "NextVal");
     Builder.CreateStore(next_val, Alloca);
-    cond = Builder.CreateICmpSLT(next_val, cond, "loopcondition");
+    // cond = Builder.CreateICmpSLT(next_val, cond, "loopcondition");
     BasicBlock *loopEndBlock = Builder.GetInsertBlock();
-    Builder.CreateCondBr(cond, loop_body, afterBB);
-    Builder.SetInsertPoint(afterBB);
+    // Builder.CreateCondBr(cond, loop_body, afterBB);
+    
+    Builder.CreateBr(beforeBB);
     Variable->addIncoming(next_val, loopEndBlock);
+
+    Builder.SetInsertPoint(afterBB);
 
     if (OldVal) {
         NamedValues[*(loop_var->variable_name)] = OldVal;
@@ -881,16 +905,19 @@ Value *StringRetBrkContStatement::codegen() {
 	    	return nullptr;
 		}
 	    loopInfo *currentLoop = loops.top();
-	    Expr *condition = nullptr;
-	    string var = currentLoop->loopVariable;
-	    AllocaInst *Alloca = NamedValues[var];
-	    Value *step_val = ConstantInt::get(Context, APInt(32, 1));
-	    Value *cur = Builder.CreateLoad(Alloca, var);
-	    Value *next_val = Builder.CreateAdd(cur, step_val, "NextVal");
-	    Builder.CreateStore(next_val, Alloca);
-	    Value *cond = Builder.CreateICmpULE(next_val, currentLoop->condition, "loopcondition");
-	    BasicBlock *loopEndBlock = Builder.GetInsertBlock();
-	    Builder.CreateCondBr(cond, currentLoop->checkBB, currentLoop->afterBB);
+	    Builder.CreateBr(currentLoop->checkBB);
+	    
+	    // Expr *condition = nullptr;
+	    // string var = currentLoop->loopVariable;
+	    // AllocaInst *Alloca = NamedValues[var];
+	    // Value *step_val = ConstantInt::get(Context, APInt(32, 1));
+	    // Value *cur = Builder.CreateLoad(Alloca, var);
+	    // Value *next_val = Builder.CreateAdd(cur, step_val, "NextVal");
+	    // Builder.CreateStore(next_val, Alloca);
+	    // Value *cond = currentLoop->condition;
+	    // // Value *cond = Builder.CreateICmpULE(next_val, currentLoop->condition, "loopcondition");
+	    // BasicBlock *loopEndBlock = Builder.GetInsertBlock();
+	    // Builder.CreateCondBr(cond, currentLoop->checkBB, currentLoop->afterBB);
 	}
     
     // call_stack.pop();

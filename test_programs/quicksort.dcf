@@ -1,0 +1,52 @@
+class Program{
+	int nums[100005];
+	int quicksort(int l, int r)
+	{
+		
+		int piv;
+		int temp;
+		
+		piv = l;
+		
+		if(r < l)
+		{
+			return 0;
+		}
+
+		for i = l+1, i< r+1
+		{
+			if(nums[i] - nums[piv] < 0)
+			{
+				temp = nums[piv];
+				nums[piv] = nums[i];
+				nums[i] = temp;
+				piv = i;
+			}
+		}
+		quicksort(l,piv-1);
+		quicksort(piv+1,r);
+
+		return 1;
+	}
+	int main()
+	{
+		int n;
+		int j;
+	    int x;
+		n = 5;
+		x=5;
+
+		for i = 0, i<n
+		{
+			nums[i] = x;
+	        x -= 1;
+		}
+
+		quicksort(0,n-1);
+		for i=0, i<n
+		{
+	        callout("printf","%d ",nums[i]);
+		}
+		return 0;
+	}
+}

@@ -136,6 +136,10 @@ bool StatementList::has_return() {
     	if (statement->get_statement_type() == "RetExpr" || statement->get_statement_type() == "Ret") {
             return true;
     	}
+    	if (statement->get_statement_type() == "Block") {
+    		bool has = ((Block *) statement)->has_return();
+    		if (has == true) return true;
+    	}
     }
     return false;
 }
@@ -143,6 +147,10 @@ bool StatementList::has_return_expr() {
     for (auto statement: statement_list) {
     	if (statement->get_statement_type() == "RetExpr") {
             return true;
+    	}
+    	if (statement->get_statement_type() == "Block") {
+    		bool has = ((Block *) statement)->has_return_expr();
+    		if (has == true) return true;
     	}
     }
     return false;

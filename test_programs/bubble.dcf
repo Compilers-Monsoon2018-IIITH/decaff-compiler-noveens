@@ -1,0 +1,41 @@
+class Program{
+	int nums[100005];
+	int main()
+	{
+		int n, x;
+		n = 5; // Number of numbers to sort
+
+		// Seeding rand with current time
+		callout("srand", callout("time", 0));
+
+		for i=0, i<n {
+			x = callout("rand") % 100;
+			nums[i] = x;
+		}
+
+		callout("printf","|");
+		for i=0, i<n {
+	        callout("printf"," %d",nums[i]);
+		}
+		
+		callout("printf","| <- INITIAL ; SORTED -> ");
+		for i=0, i<n {
+			for j=i+1, j<n {
+				if(nums[j] < nums[i]) {
+					int temp;
+					temp = nums[i];
+					nums[i] = nums[j];
+					nums[j] = temp;
+				}
+			}
+		}
+
+		callout("printf","|");
+		for i=0, i<n
+		{
+	        callout("printf"," %d",nums[i]);
+		}
+		callout("printf"," |");
+		return 0;
+	}
+}

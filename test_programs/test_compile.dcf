@@ -3,23 +3,35 @@ class Program {
 	int a, b, c;
 
 	int temp(int aa) {
-		int aaa;
-		return aa;
+		if (aa % 2 == 0) {
+			return 0;
+		}
+		else {
+			return 1;
+		}
+		// return -1;
 	}
 
 	int main() {
 		int a;
-		int n, i;
+		int n;
 		boolean tmp;
-		n = i - 2;
 		n += 5;
 		tmp = n > 0;
-		callout("printf", "n = %d and i = %d and tmp = %d", n, i, tmp);
+		callout("printf", "n = %d and tmp = %d; ", n, tmp);
+		callout("printf", "temp(2) = %d, temp(1) = %d; ", temp(2), temp(1));
 		
-		for i=temp(2), 5 {
-			int aa;
-			callout("printf", "i = %d\r\n", i);
-		}
+		// if (temp(3) > 2) {
+		// 	callout("printf", "true; ");
+		// }
+		// else {
+		// 	callout("printf", "false; ");	
+		// }
+
+		// for i=temp(2), i<5 {
+		// 	int aa;
+		// 	callout("printf", "i = %d; ", i);
+		// }
 		
 		return 0;
 	}

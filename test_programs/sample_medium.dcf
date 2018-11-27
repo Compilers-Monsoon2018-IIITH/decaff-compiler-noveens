@@ -1,0 +1,34 @@
+class Program {
+	int arr[ 100 ];
+	int a, b, c;
+
+	int temp(int aa) {
+		int aaa;
+		aa += 1-1+3*2;
+		aa = (aa*2)/2;
+		return aa;
+	}
+
+	int main() {
+		int n;
+		int tmp;
+	
+		for i= 1, n!=2 {
+		 	
+		 	int qwe ;
+		 	qwe = 2;
+			callout("printf", "%d  ",temp(123));		
+			n+=1;
+
+			if(true){
+				int g;
+				qwe = 3;
+
+			}
+			callout("printf","qwe = %d ",qwe);
+			
+		}
+		
+		return 0;
+	}
+}

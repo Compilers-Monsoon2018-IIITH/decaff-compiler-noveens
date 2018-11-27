@@ -1,21 +1,26 @@
 class Program {
 	void main() {
-		int n; ReadInteger(n);
+		int n;
+		n = 10; 
+
+		callout("printf", "First %d fibonacci numbers: ", n);
 
 		if (n == 1) {
-			Print(0, "\n");
+			callout("printf", "0");
 		}
 		else {
-			int zer, one, now, i;
+			int zer, one, now;
 			zer = 0;
 			one = 1;
 			now = 1;
+			callout("printf", "%d ", zer);
+			callout("printf", "%d ", one);
 			for i=0,i<n-2 {
 				now = zer + one;
 				zer = one;
 				one = now;
+				callout("printf", "%d ", now);
 			}
-			Print(now, "\n");
 		}
 		return;
 	}
