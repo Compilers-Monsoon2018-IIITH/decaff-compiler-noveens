@@ -2,28 +2,38 @@ class Program {
 	int arr[ 100000 ];
 
 	void main() {
-		int n, i; ReadInteger(n);
+		int n;
+		int to_search;
+		boolean fl;
+		fl = false;
+		n = 5;
 
-		for i=0,i<n {
-			int temp; ReadInteger(temp);
-			arr[i] = temp;
+		// Seeding rand with current time
+		callout("srand", callout("time", 0));
+
+		for i=0, i<n {
+			arr[i] = callout("rand") % 10;
 		}
 
-		int to_search; ReadInteger(to_search);
+		to_search = callout("rand") % 10;
 
-		int fl = 0;
 		for i=0,i<n {
 			if (arr[i] == to_search) {
-				fl = 1;
-				break;
+				fl = true;
 			}
 		}
 
-		if (fl == 1) {
-			Print(to_search, " exists in the array", "\n");
+		callout("printf", "arr: ");
+		for i=0,i<n {
+			callout("printf", "%d ", arr[i]);
+		}
+		callout("printf", "; to search: %d; ", to_search);
+
+		if (fl == true) {
+			callout("printf", "%d exists in the array", to_search);
 		}
 		else {
-			Print(to_search, " doesn't exist in the array", "\n");
+			callout("printf", "%d doesnt exist in the array", to_search);
 		}
 
 		return;

@@ -1,0 +1,31 @@
+class Program {
+	int done;
+	int n;
+
+	void fib(int a, int b) {
+		if (done == n) {
+			return;
+		}
+		callout("printf", "%d ", a + b);
+		done += 1;
+		fib(b, a + b);
+		return;
+	}
+
+	void main() {
+		n = 10; 
+
+		callout("printf", "First %d fibonacci numbers: ", n);
+
+		if (n == 1) {
+			callout("printf", "1");
+		}
+		else {
+			callout("printf", "1 ");
+			callout("printf", "1 ");
+			done = 2;
+			fib(1, 1);
+		}
+		return;
+	}
+}

@@ -4,12 +4,17 @@ class Program {
 
 	int temp(int aa) {
 		if (aa % 2 == 0) {
+			b = 2;
 			return 0;
 		}
+		
+		// if (aa % 2 == 1) {
 		else {
+			b = 2;
 			return 1;
 		}
-		// return -1;
+		
+		return -1;
 	}
 
 	int main() {
@@ -21,17 +26,17 @@ class Program {
 		callout("printf", "n = %d and tmp = %d; ", n, tmp);
 		callout("printf", "temp(2) = %d, temp(1) = %d; ", temp(2), temp(1));
 		
-		// if (temp(3) > 2) {
-		// 	callout("printf", "true; ");
-		// }
-		// else {
-		// 	callout("printf", "false; ");	
-		// }
+		if (temp(3) > 2) {
+			callout("printf", "true; ");
+		}
+		else {
+			callout("printf", "false; ");	
+		}
 
-		// for i=temp(2), i<5 {
-		// 	int aa;
-		// 	callout("printf", "i = %d; ", i);
-		// }
+		for i=temp(2), i<5 {
+			int aa;
+			callout("printf", "i = %d; ", i);
+		}
 		
 		return 0;
 	}
