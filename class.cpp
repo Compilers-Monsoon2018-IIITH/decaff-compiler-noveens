@@ -125,6 +125,12 @@ bool Block::has_return() {
 bool Block::has_return_expr() {
     return statement_list->has_return_expr();
 }
+bool Block::has_break() {
+	return statement_list->has_break();
+}
+bool Block::has_continue() {
+	return statement_list->has_continue();
+}
 
 // Class-16
 StatementList::StatementList() {};
@@ -154,6 +160,22 @@ bool StatementList::has_return_expr() {
     	}
     }
     return false;
+}
+bool StatementList::has_break() {
+	for (auto statement: statement_list) {
+		if (statement->get_statement_type() == "Break") {
+			return true;
+		}
+	}
+	return false;
+}
+bool StatementList::has_continue() {
+	for (auto statement: statement_list) {
+		if (statement->get_statement_type() == "Continue") {
+			return true;
+		}
+	}
+	return false;
 }
 
 // Class-17

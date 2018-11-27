@@ -1,0 +1,63 @@
+class Program {
+	int arr[ 100000 ];
+
+	int temp(int a) {
+		return a;
+	}
+
+	void main() {
+		int n, n2;
+		int tosearch;
+		boolean fl;
+		fl = false;
+		n = 5;
+
+		// n = temp(n + 5);
+
+		n2 = arr[5];
+		// n2 += true;
+		// n2 = fl;
+		// n2 -= true;
+		// continue;
+
+		fl = (n == 5) && (n >= 5);
+
+		if (fl == true) {
+			callout("printf", "fl = %d; ", fl);
+		}
+
+		for i=0, n {
+			arr[i] = 1;
+		}
+
+		tosearch = 1;
+
+		for i=0, n {
+			if (arr[i] == tosearch) {
+				fl = true;
+				// continue;
+				break;
+				callout("printf", "cc; ");
+			}
+			callout("printf", "bb; ");
+			break;
+			// continue;
+			callout("printf", "in loop for %dth time; ", i);
+		}
+
+		callout("printf", "arr: ");
+		for i=0, n {
+			callout("printf", "%d ", arr[i]);
+		}
+		callout("printf", "; to search: %d; ", tosearch);
+
+		if (fl == true) {
+			callout("printf", "%d exists in the array", tosearch);
+		}
+		else {
+			callout("printf", "%d doesnt exist in the array", tosearch);
+		}
+
+		return;
+	}
+}

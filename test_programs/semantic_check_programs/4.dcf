@@ -1,0 +1,11 @@
+class Program {
+	int global_int;
+	int global_arr [0]; // see that zero length is now allowed
+	boolean global_bool;
+
+	int main() {
+		int local_int;
+		int local_int;
+		return 0;
+	}	
+}

@@ -1,0 +1,16 @@
+class Program {
+	int global_int;
+	boolean global_bool;
+
+	int fun(int a) {
+		return a;
+	}
+
+	int main() {
+		fun(true); // bool not allowed
+		fun(1, 2); // not allowed, more params
+		fun(1); // correct
+
+		return 0;
+	}	
+}

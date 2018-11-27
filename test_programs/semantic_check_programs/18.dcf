@@ -1,0 +1,23 @@
+class Program {
+	int global_int;
+	int global_arr[100];
+	boolean global_bool;
+
+	int main() {
+		int a, b;
+		bool c;
+		
+		for i=0, 5 {
+			break; // should work
+		}
+
+		for i=0, 5 {
+			continue; // should work
+		}
+
+		break; // shouldn't work
+		continue; // shouldn't work
+
+		return 0;
+	}	
+}

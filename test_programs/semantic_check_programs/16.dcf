@@ -1,0 +1,17 @@
+class Program {
+	int global_int;
+	int global_arr[100];
+	boolean global_bool;
+
+	int main() {
+		int a, b;
+		bool c;
+
+		a = 1;
+
+		a += true; // shouldn't work
+		a += 5; // should work
+
+		return 0;
+	}	
+}

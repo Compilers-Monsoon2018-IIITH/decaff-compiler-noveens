@@ -8,17 +8,17 @@ class Program {
 		// Seeding rand with current time
 		callout("srand", callout("time", 0));
 
-		for i=0,i<n {
+		for i=0, n {
 			arr[i] = callout("rand") % 100;
 		}
 
 		callout("printf", "arr: ");
-		for i=0,i<n {
+		for i=0, n {
 			callout("printf", "%d ", arr[i]);
 		}
 
 		callout("printf", "; even numbers: ");
-		for i=0,i<n {
+		for i=0, n {
 			if (arr[i] % 2 == 0) {
 				callout("printf", "%d ", arr[i]);
 			}

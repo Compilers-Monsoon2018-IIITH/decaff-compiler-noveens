@@ -1,0 +1,10 @@
+class Program {
+	int global_int;
+	boolean global_bool;
+
+	int main() {
+		// local_int is not declared
+		local_int = 2;
+		return 0;
+	}	
+}

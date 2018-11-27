@@ -1,0 +1,13 @@
+class Program {
+	int global_int;
+	boolean global_bool;
+
+	int main2() {
+		int local_int;
+		return 0;
+	}
+
+	int main(int a) {
+		// shouldn't work because main has no parameters
+	}
+}

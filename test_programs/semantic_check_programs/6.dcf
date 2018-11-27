@@ -1,0 +1,20 @@
+class Program {
+	int global_int;
+	boolean global_bool;
+
+	int fun(int a) {
+		return a;
+	}
+
+	void no_return_fun(int a) {
+		return;
+	}
+
+	int main() {
+		int a, b;
+		a = no_return_fun(); // will not work
+		b = fun(2) + 3; // will work
+
+		return 0;
+	}	
+}

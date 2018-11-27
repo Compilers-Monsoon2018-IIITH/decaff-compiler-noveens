@@ -32,7 +32,7 @@ class Program {
 		mx = 1;
 		callout("printf", "max = %d; ", mx);
 
-		for i=0,i<2 {
+		for i=0, 2 {
 			if (true) {
 				int az;
 				mx = 2;
@@ -47,7 +47,7 @@ class Program {
 			callout("printf", "false; ");	
 		}
 
-		for i=temp(2, 0), i<5 {
+		for i=temp(2, 0), 5 {
 			int aa;
 			callout("printf", "i = %d; ", i);
 		}

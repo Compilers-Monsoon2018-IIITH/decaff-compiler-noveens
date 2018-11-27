@@ -1,0 +1,19 @@
+class Program {
+	int global_int;
+	int global_arr[100];
+	boolean global_bool;
+
+	int main() {
+		int a, b;
+		bool c;
+
+		a = 1;
+		b = 2;
+		c = true;
+		
+		if (!a) {} // shouldn't work
+		if (!c) {} // should work
+
+		return 0;
+	}	
+}

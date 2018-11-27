@@ -2133,6 +2133,8 @@ int main(int argc, char **argv) {
 		semantic_visitor->visit(rootAst);
 
 		// Code generation
-		rootAst->codegen(semantic_visitor->logger_class);
+		class CodeGenVisitor *codegen_visitor = new CodeGenVisitor(semantic_visitor->logger_class);
+		codegen_visitor->visit(rootAst);
+		// rootAst->codegen();
 	}
 }
