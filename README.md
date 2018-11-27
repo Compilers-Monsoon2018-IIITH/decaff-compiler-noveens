@@ -1,7 +1,7 @@
 # Noveen's compiler for decaf
 
 ## Description
-The project combines the `flex` scanner generator and `bison` parser using scaffolding C++ code in `class.cpp`. During parsing, the Abstract Syntax Tree is constructed.
+The project combines the `flex` scanner generator and `bison` parser using scaffolding C++ code in `class.cpp`. During parsing, the Abstract Syntax Tree (AST) is constructed.
 The use of C++ allows for design patters such as the visitor pattern to pass over the AST for debugging and code generations purposes.
 
 ## File Structure
@@ -21,6 +21,8 @@ The use of C++ allows for design patters such as the visitor pattern to pass ove
 3. `./decaf < test_programs/test_compile.dcf 2> llvm_ir.txt` - redirect generated code from `stderr` to `llvm_ir.txt` file
 4. `lli-6.0 llvm_ir.txt` - Runs the generated code
 
-The above steps use the config utility `llvm-config`, which must be installed on the system path and be available without specifying a version number.
+## Dependencies
 
-This project uses the `clang++` compiler, since `llvm-config` produces some flags which are not understood by `g++`.
+- `llvm-config-6.0`
+- `g++-14`
+- `lli-6.0`
