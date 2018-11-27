@@ -4,23 +4,22 @@
 using namespace std;
 using namespace llvm;
 
-bool debug = false;
-
-static LLVMContext Context;
-static Module *TheModule = new Module("Compiler for decaf", Context);
-static IRBuilder<> Builder(Context);
-static map<string, AllocaInst *> NamedValues; // Manages the scope
-struct loopInfo {
-	BasicBlock *afterBB, *checkBB;
+struct loop_struct {
+    BasicBlock *afterBB, *checkBB;
     Value *condition;
     string loopVariable;
-	PHINode *phiVariable;
+    PHINode *phiVariable;
 };
-static stack<loopInfo*> loops;
-// static stack<string> call_stack;
-int call_stack_size = 0;
 
+static LLVMContext Context;
+static Module *LLVMmodule = new Module("Noveen's compiler for decaf", Context);
+static IRBuilder<> MagicalBuilder(Context);
+static map<string, AllocaInst *> CurrentScopeVariables; // Manages the scope
+static stack<loop_struct*> loops;
 class LogErrorClass* logger_class;
+
+int call_stack_size = 0;
+bool debug = false;
 
 string debug_info() {
 	string ret = "";
@@ -30,12 +29,7 @@ string debug_info() {
 }
 
 void Program::print_llvm_ir() {
-	// error_code OutErrorInfo;
-	// raw_fd_ostream stream(llvm::StringRef("llvm_ir.txt"), OutErrorInfo, llvm::sys::fs::F_None);
-	TheModule->print(llvm::errs(), nullptr);
-	// TheModule->print(stream, nullptr);
-	// llvm::errs() << "llvm_ir.txt";
-	// TheModule->dump();
+	LLVMmodule->print(llvm::errs(), nullptr);
 }
 
 AllocaInst *CreateEntryBlockAlloca(Function *TheFunction, string VarName, string type) {
@@ -55,11 +49,11 @@ Value *Program::codegen(class LogErrorClass* logger_class_carried_on) {
 		cout << debug_info() << "In codegen of: Program" << endl << flush;
 		call_stack_size ++;
 	}
-	// call_stack.push("Program");
 	logger_class = logger_class_carried_on;
 
 	// Just to pass to the function, no use
 	map<string, AllocaInst *> _;
+    
     Value *V = field_decl->codegen(true, _);
     if (V == nullptr) {
     	if (debug == true) {
@@ -78,7 +72,6 @@ Value *Program::codegen(class LogErrorClass* logger_class_carried_on) {
         return nullptr;
     }
     
-    // call_stack.pop();
     if (debug == true) {
     	call_stack_size --;
     	cout << debug_info() << "Out codegen of: Program" << endl << flush;
@@ -96,7 +89,6 @@ Value *FieldDeclList::codegen(bool is_global_scope, map<string, AllocaInst *> &O
 		cout << debug_info() << "In codegen of: FieldDeclList" << endl << flush;
 		call_stack_size ++;
 	}
-	// call_stack.push("FieldDeclList");
 
 	Value *v = ConstantInt::get(Context, APInt(32, 1));
     for (auto decleration : all_declerations) {
@@ -109,7 +101,6 @@ Value *FieldDeclList::codegen(bool is_global_scope, map<string, AllocaInst *> &O
         	return v;
         }
     }
-    // call_stack.pop();
     if (debug == true) {
     	call_stack_size --;
     	cout << debug_info() << "Out codegen of: FieldDeclList" << endl << flush;
@@ -122,7 +113,6 @@ Value *VariableList::codegen(bool is_global_scope, map<string, AllocaInst *> &Ol
 		cout << debug_info() << "In codegen of: VariableList" << endl << flush;
 		call_stack_size ++;
 	}
-	// call_stack.push("VariableList");
 
     llvm::Type *ty = nullptr;
     if (*(decleration_type) == "int") {
@@ -132,7 +122,6 @@ Value *VariableList::codegen(bool is_global_scope, map<string, AllocaInst *> &Ol
     	ty = Type::getInt1Ty(Context);
     }
     else {
-    	// Mine
     	logger_class->add("Allowed declerations are only 'int' and 'boolean'\n'" + *(decleration_type) + "' is not allowed.", this->lineno);
     	if (debug == true) {
 	    	call_stack_size --;
@@ -144,14 +133,15 @@ Value *VariableList::codegen(bool is_global_scope, map<string, AllocaInst *> &Ol
     for (auto var : declarations) {
 
     	if (is_global_scope == true) {
-			GlobalVariable *gv = TheModule->getNamedGlobal(*(var->variable_name));
+            // Global Variable
+			GlobalVariable *gv = LLVMmodule->getNamedGlobal(*(var->variable_name));
 			if (gv != nullptr) {
 				logger_class->add("Variable '" + *(var->variable_name) + "' redefined.", this->lineno);
 				continue;
 			}
     		
     		gv = new GlobalVariable(
-    			*(TheModule), ty, false,
+    			*(LLVMmodule), ty, false,
                 GlobalValue::ExternalLinkage, nullptr,
                 *(var->variable_name)
             );
@@ -159,8 +149,7 @@ Value *VariableList::codegen(bool is_global_scope, map<string, AllocaInst *> &Ol
     	}
     	else {
     		// Local Variable
-    		// TODO: Need to make a vector of scopes
-    		if (NamedValues.find(*(var->variable_name)) != NamedValues.end()) {
+    		if (CurrentScopeVariables.find(*(var->variable_name)) != CurrentScopeVariables.end()) {
     			logger_class->add("Variable '" + *(var->variable_name) + "' redefined.", this->lineno);
     			if (debug == true) {
 			    	call_stack_size --;
@@ -168,7 +157,7 @@ Value *VariableList::codegen(bool is_global_scope, map<string, AllocaInst *> &Ol
 			    }
 				return nullptr;
     		}
-    		Function *TheFunction = Builder.GetInsertBlock()->getParent();
+    		Function *TheFunction = MagicalBuilder.GetInsertBlock()->getParent();
     		Value *initval;
     		if (*(decleration_type) == "int") {
 	    		initval = ConstantInt::get(Context, APInt(32, 0));
@@ -178,16 +167,17 @@ Value *VariableList::codegen(bool is_global_scope, map<string, AllocaInst *> &Ol
     		}
             AllocaInst *Alloca = CreateEntryBlockAlloca(TheFunction, *(var->variable_name), *(decleration_type));
 
-            Builder.CreateStore(initval, Alloca);
-	        Old_vals[*(var->variable_name)] = NamedValues[*(var->variable_name)];
-	        NamedValues[*(var->variable_name)] = Alloca;
+            MagicalBuilder.CreateStore(initval, Alloca);
+	        Old_vals[*(var->variable_name)] = CurrentScopeVariables[*(var->variable_name)];
+	        CurrentScopeVariables[*(var->variable_name)] = Alloca;
     	}
     }
 
     for (auto arr: declarations_array) {
 
         if (is_global_scope) {
-        	GlobalVariable *gv = TheModule->getNamedGlobal(*(arr->arr_name->variable_name));
+            // Global Array
+        	GlobalVariable *gv = LLVMmodule->getNamedGlobal(*(arr->arr_name->variable_name));
 			if (gv != nullptr) {
 				logger_class->add("Array '" + *(arr->arr_name->variable_name) + "' redefined.", this->lineno);
 				continue;
@@ -195,7 +185,7 @@ Value *VariableList::codegen(bool is_global_scope, map<string, AllocaInst *> &Ol
             
             ArrayType *arrType = ArrayType::get(ty, arr->get_length());
             gv = new GlobalVariable(
-            	*(TheModule), arrType, false,
+            	*(LLVMmodule), arrType, false,
                 GlobalValue::ExternalLinkage, nullptr,
                 *(arr->arr_name->variable_name)
             );
@@ -212,7 +202,6 @@ Value *VariableList::codegen(bool is_global_scope, map<string, AllocaInst *> &Ol
         }
     }
     Value *v = ConstantInt::get(Context, APInt(32, 1));
-    // call_stack.pop();
     if (debug == true) {
     	call_stack_size --;
     	cout << debug_info() << "Out codegen of: VariableList" << endl << flush;
@@ -225,9 +214,8 @@ Value *MethodDeclList::codegen() {
 		cout << debug_info() << "In codegen of: MethodDeclList" << endl << flush;
 		call_stack_size ++;
 	}
-	// call_stack.push("MethodDeclList");
 
-    Value *V;// = ConstantInt::get(Context, APInt(32, 0));
+    Value *V = ConstantInt::get(Context, APInt(32, 0));
     for (auto method : method_declerations_list) {
         V = method->codegen();
         if (V == nullptr) {
@@ -238,7 +226,6 @@ Value *MethodDeclList::codegen() {
         	return V;
         }
     }
-    // call_stack.pop();
     if (debug == true) {
     	call_stack_size --;
     	cout << debug_info() << "Out codegen of: MethodDeclList" << endl << flush;
@@ -251,7 +238,6 @@ Function *MethodDecl::codegen() {
 		cout << debug_info() << "In codegen of: MethodDecl" << endl << flush;
 		call_stack_size ++;
 	}
-	// call_stack.push("MethodDecl");
 
     vector<string> param_var_names;
     vector<string> param_var_types;
@@ -306,7 +292,7 @@ Function *MethodDecl::codegen() {
     }
 
     FunctionType *FT = llvm::FunctionType::get(returnType, arguments, false);
-    Function *F = llvm::Function::Create(FT, Function::ExternalLinkage, *(method_name->variable_name), TheModule);
+    Function *F = llvm::Function::Create(FT, Function::ExternalLinkage, *(method_name->variable_name), LLVMmodule);
 
     int Idx = 0;
     for (Function::arg_iterator AI = F->arg_begin(); Idx != param_list->parameters_list.size(); ++AI, ++Idx) {
@@ -314,40 +300,31 @@ Function *MethodDecl::codegen() {
     }
 
     BasicBlock *BB = BasicBlock::Create(Context, "entry", F);
-    Builder.SetInsertPoint(BB);
+    MagicalBuilder.SetInsertPoint(BB);
     Idx = 0;
 
     // Adding the method arguments to the current scope
     map<string, AllocaInst *> Old_vals;
-    for (auto v: NamedValues) {
+    for (auto v: CurrentScopeVariables) {
     	Old_vals[v.first] = v.second;
     }
 
     for (auto &Arg : F->args()) {
         AllocaInst *Alloca = CreateEntryBlockAlloca(F, param_var_names[Idx], param_var_types[Idx]);
-        Builder.CreateStore(&Arg, Alloca);
-        NamedValues[param_var_names[Idx]] = Alloca;
+        MagicalBuilder.CreateStore(&Arg, Alloca);
+        CurrentScopeVariables[param_var_names[Idx]] = Alloca;
         Idx++;
     }
-
-    // for (int i = 0; i < param_var_names.size() ; i++) {
-	   //  NamedValues[param_var_names[i]] = (AllocaInst *) arguments[i];
-    // }
 
     Value *RetVal = code_block->codegen();
 
     // Resetting the scope
-    NamedValues.clear();
+    CurrentScopeVariables.clear();
     for (auto v: Old_vals) {
-    	NamedValues[v.first] = Old_vals[v.first];
+    	CurrentScopeVariables[v.first] = Old_vals[v.first];
     }
 
     if (RetVal) {
-        // if (*(return_type) != "void")
-            // Builder.CreateRet(RetVal);
-        // else
-            // Builder.CreateRetVoid();
-        
         verifyFunction(*F);
         if (debug == true) {
 	    	call_stack_size --;
@@ -357,7 +334,6 @@ Function *MethodDecl::codegen() {
     }
 
     F->eraseFromParent();
-    // call_stack.pop();
     if (debug == true) {
     	call_stack_size --;
     	cout << debug_info() << "Out codegen of: MethodDecl" << endl << flush;
@@ -370,7 +346,6 @@ Value *Block::codegen() {
 		cout << debug_info() << "In codegen of: Block" << endl << flush;
 		call_stack_size ++;
 	}
-	// call_stack.push("Block");
 
     Value *V;
     map<string, AllocaInst *> Old_vals;
@@ -394,9 +369,8 @@ Value *Block::codegen() {
     }
 
     for (auto val: Old_vals) {
-    	NamedValues[val.first] = Old_vals[val.first];
+    	CurrentScopeVariables[val.first] = Old_vals[val.first];
     }
-    // call_stack.pop();
     if (debug == true) {
     	call_stack_size --;
     	cout << debug_info() << "Out codegen of: Block" << endl << flush;
@@ -409,13 +383,11 @@ Value *StatementList::codegen() {
 		cout << debug_info() << "In codegen of: StatementList" << endl << flush;
 		call_stack_size ++;
 	}
-	// call_stack.push("StatementList");
 
 	Value *v = ConstantInt::get(Context, llvm::APInt(32, 1));
     for (auto statement : statement_list) {
         v = statement->codegen();
     }
-    // call_stack.pop();
     if (debug == true) {
     	call_stack_size --;
     	cout << debug_info() << "Out codegen of: StatementList" << endl << flush;
@@ -428,11 +400,10 @@ Value *AssignStmt::codegen() {
 		cout << debug_info() << "In codegen of: AssignStmt" << endl << flush;
 		call_stack_size ++;
 	}
-	// call_stack.push("AssignStmt");
 
-    Value *cur = NamedValues[*(left_part->var_name->variable_name)];
+    Value *cur = CurrentScopeVariables[*(left_part->var_name->variable_name)];
     if (cur == nullptr) {
-        cur = TheModule->getGlobalVariable(*(left_part->var_name->variable_name));
+        cur = LLVMmodule->getGlobalVariable(*(left_part->var_name->variable_name));
     }
     if (cur == nullptr) {
     	logger_class->add("Unknown Variable Name '" + *(left_part->var_name->variable_name) + "' while assigning.", this->lineno);
@@ -442,14 +413,14 @@ Value *AssignStmt::codegen() {
 	    }
     	return nullptr;
     }
+
     Value *val = right_part->codegen();
-    // Mine
     if (right_part->get_expr_type() == "Location") {
-    	val = Builder.CreateLoad(val);
+    	val = MagicalBuilder.CreateLoad(val);
     }
 
     Value *lhs = left_part->codegen();
-    cur = Builder.CreateLoad(lhs);
+    cur = MagicalBuilder.CreateLoad(lhs);
 
     if (val == nullptr) {
     	logger_class->add("Error in RHS of assignment statement.", this->lineno);
@@ -461,17 +432,16 @@ Value *AssignStmt::codegen() {
     }
 
     if (*op == "+=") {
-        val = Builder.CreateAdd(cur, val, "addEqualToTmp");
+        val = MagicalBuilder.CreateAdd(cur, val, "addEqualToTmp");
     } 
     else if (*op == "-=") {
-        val = Builder.CreateSub(cur, val, "subEqualToTmp");
+        val = MagicalBuilder.CreateSub(cur, val, "subEqualToTmp");
     }
-    // call_stack.pop();
     if (debug == true) {
     	call_stack_size --;
     	cout << debug_info() << "Out codegen of: AssignStmt" << endl << flush;
     }
-    return Builder.CreateStore(val, lhs);
+    return MagicalBuilder.CreateStore(val, lhs);
 }
 
 Value *Literal::codegen() {
@@ -479,25 +449,23 @@ Value *Literal::codegen() {
 		cout << debug_info() << "In codegen of: Literal" << endl << flush;
 		call_stack_size ++;
 	}
-	// call_stack.push("Literal");
+
 	Value *v;
-	if (literal_type == "int") {
+    if (literal_type == "int") {
 	    v = ConstantInt::get(Context, llvm::APInt(32, static_cast<uint64_t>(lit_int)));
-	    // cout << "Int ban gaya! val = " << lit_int << endl << flush;
 	}
-	if (literal_type == "boolean") {
+	else if (literal_type == "boolean") {
 	    v = ConstantInt::get(Context, llvm::APInt(1, lit_bool));
-	    // cout << "boolean ban gaya! val = " << lit_bool << endl << flush;
 	}
-	if (literal_type == "string") {
-	    v = Builder.CreateGlobalStringPtr(*lit_string);
-	    // cout << "string ban gaya! val = " << lit_string << endl << flush;
+	else if (literal_type == "string") {
+	    v = MagicalBuilder.CreateGlobalStringPtr(*lit_string);
 	}
-	// call_stack.pop();
-	if (debug == true) {
+	
+    if (debug == true) {
 		call_stack_size --;
 		cout << debug_info() << "Out codegen of: Literal" << endl << flush;
 	}
+    
     return v;
 }
 
@@ -506,11 +474,10 @@ Value *Location::codegen() {
 		cout << debug_info() << "In codegen of: Location" << endl << flush;
 		call_stack_size ++;
 	}
-	// call_stack.push("Location");
 
-    Value *V = NamedValues[*(var_name->variable_name)];
+    Value *V = CurrentScopeVariables[*(var_name->variable_name)];
     if (V == nullptr) {
-        V = TheModule->getNamedGlobal(*(var_name->variable_name));
+        V = LLVMmodule->getNamedGlobal(*(var_name->variable_name));
     }
     if (V == nullptr) {
         logger_class->add("Unknown Variable Name '" + *(var_name->variable_name) + "' while assigning.", this->lineno);
@@ -521,7 +488,6 @@ Value *Location::codegen() {
     	return nullptr;
     }
     if (location_type == "variable") {
-    	// call_stack.pop();
     	if (debug == true) {
     		call_stack_size --;
     		cout << debug_info() << "Out codegen of: Location" << endl << flush;
@@ -529,32 +495,27 @@ Value *Location::codegen() {
         return V;
     }
 
-    //////////////////////////////////// NEED TO CHECK, NOT TESTED
-
     if (index == nullptr) {
     	logger_class->add("Invalid array index", this->lineno);
     }
     Value *index_val = index->codegen();
     
     if (index->get_expr_type() == "Location") {
-    	index_val = Builder.CreateLoad(index_val);
+    	index_val = MagicalBuilder.CreateLoad(index_val);
     }
     
     if (index_val == nullptr) {
     	logger_class->add("Invalid array index", this->lineno);
     }
     vector<Value *> array_index;
-    array_index.push_back(Builder.getInt32(0));
+    array_index.push_back(MagicalBuilder.getInt32(0));
     array_index.push_back(index_val);
-    V = Builder.CreateGEP(V, array_index, (*(var_name->variable_name)) + "_Index");
-    // call_stack.pop();
+    V = MagicalBuilder.CreateGEP(V, array_index, (*(var_name->variable_name)) + "_Index");
     if (debug == true) {
     	call_stack_size --;
     	cout << debug_info() << "Out codegen of: Location" << endl << flush;
     }
     return V;
-
-    ///////////////////////////////////// UPTIL HERE
 }
 
 Value *IfElseStmt::codegen() {
@@ -562,7 +523,6 @@ Value *IfElseStmt::codegen() {
 		cout << debug_info() << "In codegen of: IfElseStmt" << endl << flush;
 		call_stack_size ++;
 	}
-	// call_stack.push("IfElseStmt");
 
     Value *val_cond = cond->codegen();
     if (val_cond == nullptr) {
@@ -574,7 +534,7 @@ Value *IfElseStmt::codegen() {
     	return nullptr;
     }
 
-    Function *TheFunction = Builder.GetInsertBlock()->getParent();
+    Function *TheFunction = MagicalBuilder.GetInsertBlock()->getParent();
     BasicBlock *ifBlock = BasicBlock::Create(Context, "if", TheFunction);
     BasicBlock *elseBlock = BasicBlock::Create(Context, "else");
     BasicBlock *nextBlock = BasicBlock::Create(Context, "ifcont");
@@ -585,8 +545,8 @@ Value *IfElseStmt::codegen() {
     if (else_block == nullptr) {
         otherBlock = nextBlock;
     }
-    Builder.CreateCondBr(val_cond, ifBlock, otherBlock);
-    Builder.SetInsertPoint(ifBlock);
+    MagicalBuilder.CreateCondBr(val_cond, ifBlock, otherBlock);
+    MagicalBuilder.SetInsertPoint(ifBlock);
 
     Value *if_val = if_block->codegen();
     if (if_val == nullptr) {
@@ -598,15 +558,15 @@ Value *IfElseStmt::codegen() {
     }
 
     if (!ret_if) {
-        Builder.CreateBr(nextBlock);
+        MagicalBuilder.CreateBr(nextBlock);
     }
 
-    ifBlock = Builder.GetInsertBlock();
+    ifBlock = MagicalBuilder.GetInsertBlock();
 
     Value *else_val = nullptr;
     if (else_block != nullptr) {
         TheFunction->getBasicBlockList().push_back(elseBlock);
-        Builder.SetInsertPoint(elseBlock);
+        MagicalBuilder.SetInsertPoint(elseBlock);
         else_val = else_block->codegen();
         if (else_val == nullptr) {
         	if (debug == true) {
@@ -618,23 +578,22 @@ Value *IfElseStmt::codegen() {
 
         ret_else = else_block->has_return();
         if (!ret_else) {
-            Builder.CreateBr(nextBlock);
+            MagicalBuilder.CreateBr(nextBlock);
         }
     }
 
     TheFunction->getBasicBlockList().push_back(nextBlock);
-    Builder.SetInsertPoint(nextBlock);
+    MagicalBuilder.SetInsertPoint(nextBlock);
     if (ret_else && ret_if) {
-        Type *retType = Builder.GetInsertBlock()->getParent()->getReturnType();
+        Type *retType = MagicalBuilder.GetInsertBlock()->getParent()->getReturnType();
         if (retType == Type::getVoidTy(Context))
-            Builder.CreateRetVoid();
+            MagicalBuilder.CreateRetVoid();
         else {
-            Builder.CreateRet(ConstantInt::get(Context, APInt(32, 0)));
+            MagicalBuilder.CreateRet(ConstantInt::get(Context, APInt(32, 0)));
         }
     }
 
     Value *V = ConstantInt::get(Context, APInt(32, 0));
-    // call_stack.pop();
     if (debug == true) {
     	call_stack_size --;
     	cout << debug_info() << "Out codegen of: IfElseStmt" << endl << flush;
@@ -647,7 +606,6 @@ Value *IfStmt::codegen() {
 		cout << debug_info() << "In codegen of: IfStmt" << endl << flush;
 		call_stack_size ++;
 	}
-	// call_stack.push("IfStmt");
 
 	Value *val_cond = cond->codegen();
     if (val_cond == nullptr) {
@@ -659,14 +617,14 @@ Value *IfStmt::codegen() {
     	return nullptr;
     }
 
-    Function *TheFunction = Builder.GetInsertBlock()->getParent();
+    Function *TheFunction = MagicalBuilder.GetInsertBlock()->getParent();
     BasicBlock *ifBlock = BasicBlock::Create(Context, "if", TheFunction);
     BasicBlock *nextBlock = BasicBlock::Create(Context, "ifcont");
     
     bool ret_if = if_block->has_return();
     
-    Builder.CreateCondBr(val_cond, ifBlock, nextBlock);
-    Builder.SetInsertPoint(ifBlock);
+    MagicalBuilder.CreateCondBr(val_cond, ifBlock, nextBlock);
+    MagicalBuilder.SetInsertPoint(ifBlock);
 
     Value *if_val = if_block->codegen();
     if (if_val == nullptr) {
@@ -678,39 +636,15 @@ Value *IfStmt::codegen() {
     }
 
     if (!ret_if) {
-        Builder.CreateBr(nextBlock);
+        MagicalBuilder.CreateBr(nextBlock);
     }
 
-    ifBlock = Builder.GetInsertBlock();
-
-    // Value *else_val = nullptr;
-    // if (else_block != nullptr) {
-    //     TheFunction->getBasicBlockList().push_back(elseBlock);
-    //     Builder.SetInsertPoint(elseBlock);
-    //     else_val = else_block->codegen();
-    //     if (else_val == nullptr) {
-    //         return nullptr;
-    //     }
-
-    //     ret_else = else_block->has_return();
-    //     if (!ret_else) {
-    //         Builder.CreateBr(nextBlock);
-    //     }
-    // }
+    ifBlock = MagicalBuilder.GetInsertBlock();
 
     TheFunction->getBasicBlockList().push_back(nextBlock);
-    Builder.SetInsertPoint(nextBlock);
-    // if (ret_else && ret_if) {
-        // Type *retType = Builder.GetInsertBlock()->getParent()->getReturnType();
-        // if (retType == Type::getVoidTy(Context))
-            // Builder.CreateRetVoid();
-        // else {
-            // Builder.CreateRet(ConstantInt::get(Context, APInt(32, 0)));
-        // }
-    // }
+    MagicalBuilder.SetInsertPoint(nextBlock);
 
     Value *V = ConstantInt::get(Context, APInt(32, 0));
-    // call_stack.pop();
     if (debug == true) {
     	call_stack_size --;
     	cout << debug_info() << "Out codegen of: IfStmt" << endl << flush;
@@ -723,10 +657,9 @@ Value *ForStmt::codegen() {
 		cout << debug_info() << "In codegen of: ForStmt" << endl << flush;
 		call_stack_size ++;
 	}
-	// call_stack.push("ForStmt");
 	
 	// Checking if the loop var is redeclared
-	if (NamedValues.find(*(loop_var->variable_name)) != NamedValues.end()) {
+	if (CurrentScopeVariables.find(*(loop_var->variable_name)) != CurrentScopeVariables.end()) {
 		if (debug == true) {
 	    	call_stack_size --;
 	    	cout << debug_info() << "Out codegen of: ForStmt" << endl << flush;
@@ -735,12 +668,12 @@ Value *ForStmt::codegen() {
         return nullptr;
 	}
 
-    Function *TheFunction = Builder.GetInsertBlock()->getParent();
+    Function *TheFunction = MagicalBuilder.GetInsertBlock()->getParent();
     
     // Creating the loop variable
     llvm::AllocaInst *Alloca = CreateEntryBlockAlloca(TheFunction, *(loop_var->variable_name), string("int"));
-    llvm::AllocaInst *OldVal = NamedValues[*(loop_var->variable_name)];
-    NamedValues[*(loop_var->variable_name)] = Alloca;
+    llvm::AllocaInst *OldVal = CurrentScopeVariables[*(loop_var->variable_name)];
+    CurrentScopeVariables[*(loop_var->variable_name)] = Alloca;
 
     Value *start = start_cond->codegen();
     if (start == nullptr) {
@@ -752,39 +685,24 @@ Value *ForStmt::codegen() {
         return nullptr;
     }
     if (start_cond->get_expr_type() == "Location") {
-        start = Builder.CreateLoad(start);
+        start = MagicalBuilder.CreateLoad(start);
     }
 
     // Loop var
-    Builder.CreateStore(start, Alloca);
+    MagicalBuilder.CreateStore(start, Alloca);
 
     Value *step_val = ConstantInt::get(Context, APInt(32, 1));
-    BasicBlock *pre_header_basic_block = Builder.GetInsertBlock();
+    BasicBlock *pre_header_basic_block = MagicalBuilder.GetInsertBlock();
 
     BasicBlock *beforeBB = BasicBlock::Create(Context, "beforeloop", TheFunction);
     BasicBlock *loop_body = BasicBlock::Create(Context, "loop", TheFunction);
     BasicBlock *afterBB = BasicBlock::Create(Context, "afterloop", TheFunction);
 
-    Builder.CreateBr(beforeBB);
-    Builder.SetInsertPoint(beforeBB);
+    MagicalBuilder.CreateBr(beforeBB);
+    MagicalBuilder.SetInsertPoint(beforeBB);
 
-    PHINode *Variable = Builder.CreatePHI(Type::getInt32Ty(Context), 2, *(loop_var->variable_name));
+    PHINode *Variable = MagicalBuilder.CreatePHI(Type::getInt32Ty(Context), 2, *(loop_var->variable_name));
     Variable->addIncoming(start, pre_header_basic_block);
-
-    // Loading the loop variable
-    // AllocaInst *Alloca = NamedValues[*(loop_var->variable_name)];
-    // if (Alloca == nullptr) {
-    //     Alloca = (AllocaInst *) TheModule->getGlobalVariable(*(loop_var->variable_name));
-    // }
-    // if (Alloca == nullptr) {
-    // 	logger_class->add("Please declare the looping variable '" + *(loop_var->variable_name) + "' - for loop.", this->lineno);
-    // 	if (debug == true) {
-	   //  	call_stack_size --;
-	   //  	cout << debug_info() << "Out codegen of: ForStmt" << endl << flush;
-	   //  }
-    // 	return nullptr;
-    // }
-    // Builder.CreateStore(start, Alloca);
     
     Value *cond = right_cond->codegen();
     if (cond == nullptr) {
@@ -797,20 +715,20 @@ Value *ForStmt::codegen() {
     }
 
     if (right_cond->get_expr_type() == "Location") {
-        cond = Builder.CreateLoad(cond);
+        cond = MagicalBuilder.CreateLoad(cond);
     }
     
     // Pushing to the loop stack
-    auto loop_struct = new loopInfo();
-    loop_struct->afterBB = afterBB;
-    loop_struct->checkBB = loop_body;
-    loop_struct->condition = cond;
-    loop_struct->loopVariable = *(loop_var->variable_name);
-    loop_struct->phiVariable = Variable;
-    loops.push(loop_struct);
+    auto this_loop = new loop_struct();
+    this_loop->afterBB = afterBB;
+    this_loop->checkBB = loop_body;
+    this_loop->condition = cond;
+    this_loop->loopVariable = *(loop_var->variable_name);
+    this_loop->phiVariable = Variable;
+    loops.push(this_loop);
 
-    Builder.CreateCondBr(cond, loop_body, afterBB);
-    Builder.SetInsertPoint(loop_body);
+    MagicalBuilder.CreateCondBr(cond, loop_body, afterBB);
+    MagicalBuilder.SetInsertPoint(loop_body);
 
     if (code_block->codegen() == nullptr) {
     	if (debug == true) {
@@ -820,29 +738,26 @@ Value *ForStmt::codegen() {
         return nullptr;
     }
 
-    // Value *cur = Builder.CreateLoad(Alloca, *(loop_var->variable_name));
     Value *cur = Variable;
-    Value *next_val = Builder.CreateAdd(cur, step_val, "NextVal");
-    Builder.CreateStore(next_val, Alloca);
-    // cond = Builder.CreateICmpSLT(next_val, cond, "loopcondition");
-    BasicBlock *loopEndBlock = Builder.GetInsertBlock();
-    // Builder.CreateCondBr(cond, loop_body, afterBB);
+    Value *next_val = MagicalBuilder.CreateAdd(cur, step_val, "NextVal");
+    MagicalBuilder.CreateStore(next_val, Alloca);
+    // cond = MagicalBuilder.CreateICmpSLT(next_val, cond, "loopcondition");
+    BasicBlock *loopEndBlock = MagicalBuilder.GetInsertBlock();
     
-    Builder.CreateBr(beforeBB);
+    MagicalBuilder.CreateBr(beforeBB);
     Variable->addIncoming(next_val, loopEndBlock);
 
-    Builder.SetInsertPoint(afterBB);
+    MagicalBuilder.SetInsertPoint(afterBB);
 
     if (OldVal) {
-        NamedValues[*(loop_var->variable_name)] = OldVal;
+        CurrentScopeVariables[*(loop_var->variable_name)] = OldVal;
     } else {
-        NamedValues.erase(*(loop_var->variable_name));
+        CurrentScopeVariables.erase(*(loop_var->variable_name));
     }
 
     loops.pop();
 
     llvm::Value *V = ConstantInt::get(Context, APInt(32, 1));
-    // call_stack.pop();
     if (debug == true) {
     	call_stack_size --;
     	cout << debug_info() << "Out codegen of: ForStmt" << endl << flush;
@@ -855,14 +770,12 @@ Value *RetExpr::codegen() {
 		cout << debug_info() << "In codegen of: RetExpr" << endl << flush;
 		call_stack_size ++;
 	}
-	// call_stack.push("RetExpr");
 
     Value *V = expr->codegen();
     if (expr->get_expr_type() == "Location") {
-        V = Builder.CreateLoad(V);
+        V = MagicalBuilder.CreateLoad(V);
     }
-    Builder.CreateRet(V);
-    // call_stack.pop();
+    MagicalBuilder.CreateRet(V);
     if (debug == true) {
     	call_stack_size --;
     	cout << debug_info() << "Out codegen of: RetExpr" << endl << flush;
@@ -875,11 +788,10 @@ Value *StringRetBrkContStatement::codegen() {
 		cout << debug_info() << "In codegen of: StringRetBrkContStatement" << endl << flush;
 		call_stack_size ++;
 	}
-	// call_stack.push("StringRetBrkContStatement");
 
 	Value *V;
 	if (*type == "return") {
-		Builder.CreateRetVoid();
+		MagicalBuilder.CreateRetVoid();
 	}
 	else if (*type == "break") {
 		V = ConstantInt::get(Context, llvm::APInt(32, 1));
@@ -891,8 +803,8 @@ Value *StringRetBrkContStatement::codegen() {
 		    }
 	    	return nullptr;
 		}
-	    loopInfo *currentLoop = loops.top();
-	    Builder.CreateBr(currentLoop->afterBB);
+	    loop_struct *currentLoop = loops.top();
+	    MagicalBuilder.CreateBr(currentLoop->afterBB);
 	}
 	else if (*type == "continue") {
 		V = ConstantInt::get(Context, llvm::APInt(32, 1));
@@ -904,23 +816,24 @@ Value *StringRetBrkContStatement::codegen() {
 		    }
 	    	return nullptr;
 		}
-	    loopInfo *currentLoop = loops.top();
-	    Builder.CreateBr(currentLoop->checkBB);
+	    loop_struct *currentLoop = loops.top();
+	    
+        // Check
+        MagicalBuilder.CreateBr(currentLoop->checkBB);
 	    
 	    // Expr *condition = nullptr;
 	    // string var = currentLoop->loopVariable;
-	    // AllocaInst *Alloca = NamedValues[var];
+	    // AllocaInst *Alloca = CurrentScopeVariables[var];
 	    // Value *step_val = ConstantInt::get(Context, APInt(32, 1));
-	    // Value *cur = Builder.CreateLoad(Alloca, var);
-	    // Value *next_val = Builder.CreateAdd(cur, step_val, "NextVal");
-	    // Builder.CreateStore(next_val, Alloca);
+	    // Value *cur = MagicalBuilder.CreateLoad(Alloca, var);
+	    // Value *next_val = MagicalBuilder.CreateAdd(cur, step_val, "NextVal");
+	    // MagicalBuilder.CreateStore(next_val, Alloca);
 	    // Value *cond = currentLoop->condition;
-	    // // Value *cond = Builder.CreateICmpULE(next_val, currentLoop->condition, "loopcondition");
-	    // BasicBlock *loopEndBlock = Builder.GetInsertBlock();
-	    // Builder.CreateCondBr(cond, currentLoop->checkBB, currentLoop->afterBB);
+	    // // Value *cond = MagicalBuilder.CreateICmpULE(next_val, currentLoop->condition, "loopcondition");
+	    // BasicBlock *loopEndBlock = MagicalBuilder.GetInsertBlock();
+	    // MagicalBuilder.CreateCondBr(cond, currentLoop->checkBB, currentLoop->afterBB);
 	}
     
-    // call_stack.pop();
     if (debug == true) {
     	call_stack_size --;
     	cout << debug_info() << "Out codegen of: StringRetBrkContStatement" << endl << flush;
@@ -933,16 +846,15 @@ Value *BinaryOpExpression::codegen() {
 		cout << debug_info() << "In codegen of: BinaryOpExpression" << endl << flush;
 		call_stack_size ++;
 	}
-	// call_stack.push("BinaryOpExpression");
 
     Value *value_left = left->codegen();
     Value *value_right = right->codegen();
 
     if (left->get_expr_type() == "Location") {
-        value_left = Builder.CreateLoad(value_left);
+        value_left = MagicalBuilder.CreateLoad(value_left);
     }
     if (right->get_expr_type() == "Location") {
-        value_right = Builder.CreateLoad(value_right);
+        value_right = MagicalBuilder.CreateLoad(value_right);
     }
 
     if (value_left == 0) {
@@ -964,46 +876,45 @@ Value *BinaryOpExpression::codegen() {
     
     Value *v = nullptr;
     if (*op == "+") {
-        v = Builder.CreateAdd(value_left, value_right, "addtmp");
+        v = MagicalBuilder.CreateAdd(value_left, value_right, "addtmp");
     } 
     else if (*op == "-") {
-        v = Builder.CreateSub(value_left, value_right, "subtmp");
+        v = MagicalBuilder.CreateSub(value_left, value_right, "subtmp");
     } 
     else if (*op == "*") {
-        v = Builder.CreateMul(value_left, value_right, "multmp");
+        v = MagicalBuilder.CreateMul(value_left, value_right, "multmp");
     } 
     else if (*op == "/") {
-        v = Builder.CreateSDiv(value_left, value_right, "divtmp");
+        v = MagicalBuilder.CreateSDiv(value_left, value_right, "divtmp");
     } 
     else if (*op == "%") {
-        v = Builder.CreateSRem(value_left, value_right, "modtmp");
+        v = MagicalBuilder.CreateSRem(value_left, value_right, "modtmp");
     } 
     else if (*op == "<") {
-        v = Builder.CreateICmpSLT(value_left, value_right, "ltcomparetmp");
+        v = MagicalBuilder.CreateICmpSLT(value_left, value_right, "ltcomparetmp");
     } 
     else if (*op == ">") {
-        v = Builder.CreateICmpSGT(value_left, value_right, "gtcomparetmp");
+        v = MagicalBuilder.CreateICmpSGT(value_left, value_right, "gtcomparetmp");
     } 
     else if (*op == "<=") {
-        v = Builder.CreateICmpSLE(value_left, value_right, "lecomparetmp");
+        v = MagicalBuilder.CreateICmpSLE(value_left, value_right, "lecomparetmp");
     } 
     else if (*op == ">=") {
-        v = Builder.CreateICmpSGE(value_left, value_right, "gecomparetmp");
+        v = MagicalBuilder.CreateICmpSGE(value_left, value_right, "gecomparetmp");
     } 
     else if (*op == "==") {
-        v = Builder.CreateICmpEQ(value_left, value_right, "equalcomparetmp");
+        v = MagicalBuilder.CreateICmpEQ(value_left, value_right, "equalcomparetmp");
     } 
     else if (*op == "!=") {
-        v = Builder.CreateICmpNE(value_left, value_right, "notequalcomparetmp");
+        v = MagicalBuilder.CreateICmpNE(value_left, value_right, "notequalcomparetmp");
     }
     else if (*op == "&&") {
-        v = Builder.CreateAnd(value_left, value_right, "andcomparetmp");
+        v = MagicalBuilder.CreateAnd(value_left, value_right, "andcomparetmp");
     } 
     else if (*op == "||") {
-        v = Builder.CreateOr(value_left, value_right, "orcomparetmp");
+        v = MagicalBuilder.CreateOr(value_left, value_right, "orcomparetmp");
     }
 
-    // call_stack.pop();
     if (debug == true) {
     	call_stack_size --;
     	cout << debug_info() << "Out codegen of: BinaryOpExpression" << endl << flush;
@@ -1016,28 +927,25 @@ Value *UnaryOpExpression::codegen() {
 		cout << debug_info() << "In codegen of: UnaryOpExpression" << endl << flush;
 		call_stack_size ++;
 	}
-	// call_stack.push("UnaryOpExpression");
 
     Value *v = expr->codegen();
     if (expr->get_expr_type() == "Location") {
-        v = Builder.CreateLoad(v);
+        v = MagicalBuilder.CreateLoad(v);
     }
 
     if (*op == "-") {
-    	// call_stack.pop();
     	if (debug == true) {
     		call_stack_size --;
     		cout << debug_info() << "Out codegen of: UnaryOpExpression" << endl << flush;
     	}
-        return Builder.CreateNeg(v, "negtmp");
+        return MagicalBuilder.CreateNeg(v, "negtmp");
     } 
     else if (*op == "!") {
-    	// call_stack.pop();
     	if (debug == true) {
     		call_stack_size --;
     		cout << debug_info() << "Out codegen of: UnaryOpExpression" << endl << flush;
     	}
-        return Builder.CreateNot(v, "nottmp");
+        return MagicalBuilder.CreateNot(v, "nottmp");
     }
 }
 
@@ -1047,7 +955,7 @@ Value *MethodCall::codegen() {
 		call_stack_size ++;
 	}
 
-    Function *callee = TheModule->getFunction(*(method_name->variable_name));
+    Function *callee = LLVMmodule->getFunction(*(method_name->variable_name));
     if (callee == nullptr) {
     	logger_class->add("Unknown function name '" + *(method_name->variable_name) + "'", this->lineno);
     	if (debug == true) {
@@ -1058,26 +966,6 @@ Value *MethodCall::codegen() {
     }
 
     Type* retType = callee->getReturnType();
-    
-    // string callee_type = call_stack.top();
-    
-    // llvm::raw_os_ostream os(std::cerr);
-    // retType->print(os);
-
-	// if (callee_type == "IfStmt" || callee_type == "IfElseStmt") {
-    //     if (retType->getIntegerBitWidth() != 1) {
-    //         logger_class->add("Method '" + *(method_name->variable_name) + "' should return a boolean, but returns something else.", this->lineno);
-	//     	return nullptr;
-    //     }
-	// }
-	// if (callee_type == "AssignStmt" || callee_type == "RetExpr" || callee_type == "ForStmt" || callee_type == "Location") {
-    //     if (retType->getIntegerBitWidth() < 32) {
-    //         logger_class->add("Method '" + *(method_name->variable_name) + "' should return an 'int', but returns something else.", this->lineno);
-	//     	return nullptr;
-    //     }
-	// }
-
-	// call_stack.push("MethodCall");
 
     vector<class Expr *> args_list = args->arg_list;
     if (callee->arg_size() != args_list.size()) {
@@ -1095,7 +983,7 @@ Value *MethodCall::codegen() {
     for (auto &arg : args_list) {
         Value *argVal = arg->codegen();
         if (arg->get_expr_type() == "Location") {
-            argVal = Builder.CreateLoad(argVal);
+            argVal = MagicalBuilder.CreateLoad(argVal);
         }
         if (argVal == nullptr) {
             logger_class->add("Method Argument passed is not valid.", this->lineno);
@@ -1108,11 +996,9 @@ Value *MethodCall::codegen() {
         Args.push_back(argVal);
     }
 
-    ////////////////// NOTE: Confirm
     std::reverse(Args.begin(), Args.end());
 
-    Value *v = Builder.CreateCall(callee, Args);
-    // call_stack.pop();
+    Value *v = MagicalBuilder.CreateCall(callee, Args);
     if (debug == true) {
     	call_stack_size --;
     	cout << debug_info() << "Out codegen of: MethodCall" << endl << flush;
@@ -1141,7 +1027,7 @@ Value *CalloutCall::codegen() {
     ArrayRef<Type *> argsRef(argTypes);
     ArrayRef<Value *> funcargs(Args);
     FunctionType *FType = FunctionType::get(Type::getInt32Ty(Context), argsRef, false);
-    Constant *func = TheModule->getOrInsertFunction(*function_name, FType);
+    Constant *func = LLVMmodule->getOrInsertFunction(*function_name, FType);
     if (!func) {
     	logger_class->add("Callout: Error in inbuilt function call. Unknown Function name '" + (*function_name) + "'", this->lineno);
     	if (debug == true) {
@@ -1151,7 +1037,7 @@ Value *CalloutCall::codegen() {
         return nullptr;
     }
 
-    Value *v = Builder.CreateCall(func, funcargs);
+    Value *v = MagicalBuilder.CreateCall(func, funcargs);
     if (debug == true) {
 		call_stack_size --;
 		cout << debug_info() << "Out codegen of: CalloutCall" << endl << flush;
@@ -1179,12 +1065,12 @@ Value *CalloutArg::codegen() {
 			call_stack_size --;
 			cout << debug_info() << "Out codegen of: CalloutArg" << endl << flush;
 		}
-    	return Builder.CreateGlobalStringPtr(*arg_string);
+    	return MagicalBuilder.CreateGlobalStringPtr(*arg_string);
     }
 
     Value *v = arg_expr->codegen();
     if (arg_expr->get_expr_type() == "Location") {
-        v = Builder.CreateLoad(v);
+        v = MagicalBuilder.CreateLoad(v);
     }
     if (debug == true) {
 		call_stack_size --;
